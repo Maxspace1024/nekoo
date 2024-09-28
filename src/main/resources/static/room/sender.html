@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>sender</title>
+</head>
+<body>
+<button id="btn">send</button>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const btn = document.querySelector("#btn")
+
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+        // stompClient.debug = function(str) {
+        // if (str.includes("ERROR")) {
+        //         console.error(str); // 只輸出錯誤消息
+        //     }
+        // };
+
+        stompClient.connect({}, function (frame) {
+            btn.addEventListener("click", () => {
+                stompClient.send("/app/danmaku", {},
+                    JSON.stringify(
+                        {
+                            action: {
+                                code: 3,
+                                id: "66e64e153346c26b4e300ea4"
+                            },
+                            ownUserId: 12,
+                            imageId: "asdfqwer",
+                            content: "hello world",
+                            visible: 0,
+                            posX: 1,
+                            posY: 2
+                        }
+                    )
+                )
+            })
+        })
+    })
+</script>
+</body>
+</html>

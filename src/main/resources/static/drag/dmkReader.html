@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #image-container {
+            position: relative;
+            width: 500px;
+            height: 300px;
+            border: 1px solid black;
+        }
+
+        #background-img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .danmaku {
+            position: absolute;
+            background: white;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const imageContainer = document.getElementById('image-container');
+            const input = document.getElementById('draggable-input');
+
+            let socket = new SockJS('/ws');
+            let stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+                stompClient.subscribe(`/topic/danmaku/d01`, function (messageOutput) {
+                    let data = JSON.parse(messageOutput.body)
+                    console.log(data)
+                    
+                    let spanObject = document.createElement("span")
+                    spanObject.innerText = data.content
+                    spanObject.classList.add("danmaku")
+                    spanObject.style.position = `absolute`
+                    spanObject.style.left = `${data.posx}px`
+                    spanObject.style.top = `${data.posy}px`
+
+                    imageContainer.appendChild(spanObject)
+                });
+            })
+        })
+
+    </script>
+</head>
+<body>
+<div id="image-container">
+    <img src="https://memeprod.ap-south-1.linodeobjects.com/user-template/fca06d622e0014ada9701a7fe171fafc.png"
+         id="background-img" alt="Background">
+</div>
+</body>
+</html>

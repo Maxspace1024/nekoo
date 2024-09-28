@@ -1,0 +1,24 @@
+package com.brian.nekoo.controller;
+
+import lombok.extern.log4j.Log4j2;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.messaging.simp.user.SimpUserRegistry;
+import org.springframework.stereotype.Controller;
+
+@Controller
+@Log4j2
+public class WebSocketController {
+
+    private final SimpMessagingTemplate messagingTemplate;
+    private final SimpUserRegistry simpUserRegistry;
+
+    public WebSocketController(SimpMessagingTemplate messagingTemplate, SimpUserRegistry simpUserRegistry) {
+        this.messagingTemplate = messagingTemplate;
+        this.simpUserRegistry = simpUserRegistry;
+    }
+
+//    @MessageMapping("/danmaku")
+//    public void danmaku(SimpMessageHeaderAccessor accessor) {
+//        messagingTemplate.convertAndSend("/topic/danmaku/", "x");
+//    }
+}

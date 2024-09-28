@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <style>
+        #image-container {
+            position: relative;
+            width: 500px;
+            height: 300px;
+            border: 1px solid black;
+        }
+
+        #background-img {
+            width: 100%;
+            height: 100%;
+        }
+
+        #draggable-input {
+            position: absolute;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const imageContainer = document.getElementById('image-container');
+            const input = document.getElementById('draggable-input');
+            const confirmBtn = document.getElementById('confirm-btn');
+            let isDragging = false;
+            let offsetX, offsetY;
+
+            let socket = new SockJS('/ws');
+            let stompClient = Stomp.over(socket);
+
+            stompClient.connect({}, function (frame) {
+            })
+
+            imageContainer.addEventListener('click', (event) => {
+                input.style.display = 'block';
+                confirmBtn.style.display = 'block';
+                input.style.left = `${event.clientX - imageContainer.offsetLeft}px`;
+                input.style.top = `${event.clientY - imageContainer.offsetTop}px`;
+            });
+
+            input.addEventListener('mousedown', (event) => {
+                isDragging = true;
+                offsetX = event.offsetX;
+                offsetY = event.offsetY;
+            });
+
+            input.addEventListener('keypress', (event) => {
+                if (event.code === "Enter") {
+                    let posx = parseInt(input.style.left.replace("px", ""))
+                    let posy = parseInt(input.style.top.replace("px", ""))
+                    stompClient.send("/app/danmaku", {},
+                        JSON.stringify({channel: "d01", content: input.value, posx: posx, posy:posy})
+                    )
+                }
+            });
+
+            document.addEventListener('mousemove', (event) => {
+                if (isDragging) {
+                    input.style.left = `${event.clientX - imageContainer.offsetLeft - offsetX}px`;
+                    input.style.top = `${event.clientY - imageContainer.offsetTop - offsetY}px`;
+                }
+            });
+
+            document.addEventListener('mouseup', () => {
+                isDragging = false;
+            });
+
+            confirmBtn.addEventListener('click', () => {
+                input.disabled = true;
+                input.style.border = 'none';
+                confirmBtn.style.display = 'none';
+            });
+        })
+
+    </script>
+</head>
+<body>
+<div id="image-container">
+    <img src="https://memeprod.ap-south-1.linodeobjects.com/user-template/fca06d622e0014ada9701a7fe171fafc.png"
+         id="background-img" alt="Background">
+    <input type="text" id="draggable-input" style="display:none;"/>
+    <button id="confirm-btn" style="display:none;">確定</button>
+</div>
+</body>
+</html>

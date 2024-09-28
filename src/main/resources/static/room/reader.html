@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>reader</title>
+</head>
+<body>
+<p id="para"></p>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", () => {
+        const para = document.querySelector("#para")
+
+        var socket = new SockJS('/ws');
+        var stompClient = Stomp.over(socket);
+        // stompClient.debug = function(str) {
+        // if (str.includes("ERROR")) {
+        //         console.error(str); // 只輸出錯誤消息
+        //     }
+        // };
+
+        stompClient.connect({}, function (frame) {
+            stompClient.subscribe('/topic/image'+"/asdfqwer", function (messageOutput) {
+                console.log('Received: ' + messageOutput.body);
+                para.innerHTML += messageOutput.body
+            });
+        })
+    })
+</script>
+</body>
+</html>
