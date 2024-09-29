@@ -31,7 +31,7 @@ public class Friendship {
 
     // 交友狀態
     @Column(name = "state")
-    private int state;
+    private Integer state;
 
     @Column(name = "create_at")
     private Instant createAt;

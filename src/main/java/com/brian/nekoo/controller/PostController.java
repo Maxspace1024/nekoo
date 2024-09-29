@@ -7,6 +7,7 @@ import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -18,17 +19,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 @RequestMapping("/api/v1")
+@RequiredArgsConstructor
 public class PostController {
 
     private final PostService postService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
-
-    public PostController(PostService postService, UserService userService, SimpMessagingTemplate messagingTemplate) {
-        this.postService = postService;
-        this.userService = userService;
-        this.messagingTemplate = messagingTemplate;
-    }
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute PostReqDTO dto) {

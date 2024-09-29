@@ -1,15 +1,23 @@
 package com.brian.nekoo.controller.test;
 
+import com.brian.nekoo.dto.FriendshipDTO;
 import com.brian.nekoo.dto.req.FriendshipReqDTO;
+import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.FriendshipService;
+import com.brian.nekoo.service.UserService;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Controller
 @RequestMapping("/test/v1")
@@ -18,6 +26,9 @@ public class FriendshipTestController {
 
     @Autowired
     private FriendshipService friendshipService;
+
+    @Autowired
+    private UserService userService;
 
     @PostMapping("/friendship/findFriendship")
     public ResponseEntity<Object> findFriendship(@RequestBody FriendshipReqDTO dto) {
@@ -57,5 +68,32 @@ public class FriendshipTestController {
         return ResponseEntity.ok(
             friendshipService.reject(dto.getFriendshipId())
         );
+    }
+
+    @PostMapping("/friendship/search")
+    public ResponseEntity<Object> searchFriendships(@RequestBody FriendshipReqDTO dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            log.info(auth.getName());
+            User user = userService.findUserByEmail(auth.getName());
+            List<FriendshipDTO> dtos = new ArrayList<>();
+            dtos.addAll(friendshipService.findNoFriendshipsWithName(user.getId(), dto.getSearchName()));
+            dtos.addAll(friendshipService.findFriendshipsWithName(user.getId(), dto.getSearchName()));
+            return ResponseEntity.ok(dtos);
+        } else {
+            return ResponseEntity.ok("[]");
+        }
+    }
+
+    @PostMapping("/friendship/searchNotification")
+    public ResponseEntity<Object> searchFriendshipsNotification(@RequestBody FriendshipReqDTO dto) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null) {
+            log.info(auth.getName());
+            User user = userService.findUserByEmail(auth.getName());
+            return ResponseEntity.ok(friendshipService.findFriendshipsNotification(user.getId()));
+        } else {
+            return ResponseEntity.ok("[]");
+        }
     }
 }

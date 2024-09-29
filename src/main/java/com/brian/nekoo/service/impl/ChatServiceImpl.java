@@ -19,6 +19,7 @@ import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -28,6 +29,7 @@ import java.util.*;
 
 @Service
 @Log4j2
+@RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
 
     private final S3Service s3Service;
@@ -36,15 +38,6 @@ public class ChatServiceImpl implements ChatService {
     private final ChatroomRepository chatroomRepository;
     private final ChatroomUserRepository chatroomUserRepository;
     private final AssetRepository assetRepository;
-
-    public ChatServiceImpl(S3Service s3Service, UserRepository userRepository, ChatLogRepository chatLogRepository, ChatroomRepository chatroomRepository, ChatroomUserRepository chatroomUserRepository, AssetRepository assetRepository) {
-        this.s3Service = s3Service;
-        this.userRepository = userRepository;
-        this.chatLogRepository = chatLogRepository;
-        this.chatroomRepository = chatroomRepository;
-        this.chatroomUserRepository = chatroomUserRepository;
-        this.assetRepository = assetRepository;
-    }
 
     @Override
     public ChatroomDTO createChatroom(ChatroomReqDTO dto) {
@@ -90,11 +83,13 @@ public class ChatServiceImpl implements ChatService {
             // 儲存對方名稱
             ChatroomUser chatroomUser1 = ChatroomUser.builder()
                 .roomName(user2.getName())
+                .partnerUser(user2)
                 .user(user1)
                 .chatroom(chatroom)
                 .build();
             ChatroomUser chatroomUser2 = ChatroomUser.builder()
                 .roomName(user1.getName())
+                .partnerUser(user1)
                 .user(user2)
                 .chatroom(chatroom)
                 .build();
@@ -210,11 +205,15 @@ public class ChatServiceImpl implements ChatService {
             .map(chatroomUser -> {
                 Chatroom chatroom = chatroomUser.getChatroom();
                 ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
+                User partnerUser = chatroomUser.getPartnerUser();
+
                 ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
                     .chatroomId(chatroom.getId())
-                    .chatroomUuid(chatroom.getUuid())
-                    .chatroomName(chatroomUser.getRoomName())
-                    .chatroomAvatarPath(chatroom.getAvatarPath());
+                    .chatroomUuid(chatroom.getUuid());
+                if (partnerUser != null) {
+                    builder.chatroomName(partnerUser.getName())
+                        .chatroomAvatarPath(partnerUser.getAvatarPath());
+                }
                 if (lastChatLog != null) {
                     builder.lastContent(lastChatLog.getContent())
                         .lastCreateAt(lastChatLog.getCreateAt());

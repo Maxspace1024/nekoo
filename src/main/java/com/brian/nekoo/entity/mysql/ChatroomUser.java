@@ -31,4 +31,9 @@ public class ChatroomUser {
     @JoinColumn(name = "user_id")
     @JsonIgnore
     private User user;
+
+    @ManyToOne
+    @JoinColumn(name = "partner_user_id")
+    @JsonIgnore
+    private User partnerUser;
 }

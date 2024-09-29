@@ -9,6 +9,7 @@ import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.DanmakuService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -17,17 +18,12 @@ import java.util.Objects;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class DanmakuServiceImpl implements DanmakuService {
 
     private final S3Service s3Service;
     private final UserRepository userRepository;
     private final DanmakuRepository danmakuRepository;
-
-    public DanmakuServiceImpl(S3Service s3Service, UserRepository userRepository, DanmakuRepository danmakuRepository) {
-        this.s3Service = s3Service;
-        this.userRepository = userRepository;
-        this.danmakuRepository = danmakuRepository;
-    }
 
     @Override
     public DanmakuDTO createDanmaku(DanmakuReqDTO dto) {

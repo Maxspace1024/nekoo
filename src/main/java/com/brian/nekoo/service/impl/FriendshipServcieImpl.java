@@ -10,24 +10,21 @@ import com.brian.nekoo.repository.mysql.FriendshipRepository;
 import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.FriendshipService;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class FriendshipServcieImpl implements FriendshipService {
 
     private final UserRepository userRepository;
     private final FriendshipRepository friendshipRepository;
     private final ChatService chatService;
-
-    public FriendshipServcieImpl(UserRepository userRepository, FriendshipRepository friendshipRepository, ChatService chatService) {
-        this.userRepository = userRepository;
-        this.friendshipRepository = friendshipRepository;
-        this.chatService = chatService;
-    }
 
     @Override
     public FriendshipDTO findFriendship(long userId1, long userId2) {
@@ -126,5 +123,34 @@ public class FriendshipServcieImpl implements FriendshipService {
 
         }
         return FriendshipDTO.getDTO(friendship);
+    }
+
+    @Override
+    public List<FriendshipDTO> findFriendshipsWithName(long currUserId, String searchName) {
+        List<Friendship> friendships = friendshipRepository.findFriendshipsWithName(currUserId, searchName);
+        return friendships.stream().map(
+            FriendshipDTO::getDTO
+        ).toList();
+    }
+
+    @Override
+    public List<FriendshipDTO> findFriendshipsNotification(long currUserId) {
+        List<Friendship> friendships = friendshipRepository.findFriendshipsNotification(currUserId);
+        return friendships.stream().map(
+            FriendshipDTO::getDTO
+        ).toList();
+    }
+
+    @Override
+    public List<FriendshipDTO> findNoFriendshipsWithName(long currUserId, String searchName) {
+        List<User> users = userRepository.findNoFriendshipsWithName(currUserId, searchName);
+        return users.stream().map(
+            user -> FriendshipDTO.builder()
+                .senderUserId(user.getId())
+                .senderUserName(user.getName())
+                .senderUserAvatarPath(user.getAvatarPath())
+                .friendshipState(FriendshipStateEnum.NONE.ordinal())
+                .build()
+        ).toList();
     }
 }

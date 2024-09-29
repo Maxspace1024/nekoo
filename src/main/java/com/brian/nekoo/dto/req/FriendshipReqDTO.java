@@ -13,4 +13,6 @@ public class FriendshipReqDTO {
     private Long friendshipId;
     private Long senderUserId;
     private Long receiverUserId;
+    private String searchName;
+    private Integer state;
 }

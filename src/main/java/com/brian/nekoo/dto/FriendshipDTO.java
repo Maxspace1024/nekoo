@@ -1,6 +1,8 @@
 package com.brian.nekoo.dto;
 
 import com.brian.nekoo.entity.mysql.Friendship;
+import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.FriendshipStateEnum;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -44,6 +46,15 @@ public class FriendshipDTO {
             .friendshipState(friendship.getState())
             .createAt(friendship.getCreateAt())
             .modifyAt(friendship.getModifyAt())
+            .build();
+    }
+
+    public static FriendshipDTO getNoneStateDTO(User receiverUser) {
+        return FriendshipDTO.builder()
+            .receiverUserId(receiverUser.getId())
+            .receiverUserName(receiverUser.getName())
+            .receiverUserAvatarPath(receiverUser.getAvatarPath())
+            .friendshipState(FriendshipStateEnum.NONE.ordinal())
             .build();
     }
 }

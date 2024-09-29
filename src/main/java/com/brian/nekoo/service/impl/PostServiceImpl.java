@@ -12,6 +12,7 @@ import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
+import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,19 +22,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class PostServiceImpl implements PostService {
 
     private final S3Service s3Service;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AssetRepository assetRepository;
-
-    public PostServiceImpl(S3Service s3Service, PostRepository postRepository, UserRepository userRepository, AssetRepository assetRepository) {
-        this.s3Service = s3Service;
-        this.postRepository = postRepository;
-        this.userRepository = userRepository;
-        this.assetRepository = assetRepository;
-    }
 
     @Override
     public PostDTO createPost(PostReqDTO dto) {
