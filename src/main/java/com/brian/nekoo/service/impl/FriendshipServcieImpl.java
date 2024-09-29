@@ -14,6 +14,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -152,5 +153,13 @@ public class FriendshipServcieImpl implements FriendshipService {
                 .friendshipState(FriendshipStateEnum.NONE.ordinal())
                 .build()
         ).toList();
+    }
+
+    @Override
+    public List<FriendshipDTO> findAllFriendshipsWithName(long currUserId, String searchName) {
+        List<FriendshipDTO> dtos = new ArrayList<>();
+        dtos.addAll(findNoFriendshipsWithName(currUserId, searchName));
+        dtos.addAll(findFriendshipsWithName(currUserId, searchName));
+        return dtos;
     }
 }

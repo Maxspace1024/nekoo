@@ -1,6 +1,5 @@
 package com.brian.nekoo.controller.test;
 
-import com.brian.nekoo.dto.FriendshipDTO;
 import com.brian.nekoo.dto.req.FriendshipReqDTO;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.FriendshipService;
@@ -15,9 +14,6 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-
-import java.util.ArrayList;
-import java.util.List;
 
 @Controller
 @RequestMapping("/test/v1")
@@ -76,10 +72,9 @@ public class FriendshipTestController {
         if (auth != null) {
             log.info(auth.getName());
             User user = userService.findUserByEmail(auth.getName());
-            List<FriendshipDTO> dtos = new ArrayList<>();
-            dtos.addAll(friendshipService.findNoFriendshipsWithName(user.getId(), dto.getSearchName()));
-            dtos.addAll(friendshipService.findFriendshipsWithName(user.getId(), dto.getSearchName()));
-            return ResponseEntity.ok(dtos);
+            return ResponseEntity.ok(
+                friendshipService.findAllFriendshipsWithName(user.getId(), dto.getSearchName())
+            );
         } else {
             return ResponseEntity.ok("[]");
         }

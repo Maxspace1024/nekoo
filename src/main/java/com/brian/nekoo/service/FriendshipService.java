@@ -15,9 +15,13 @@ public interface FriendshipService {
 
     FriendshipDTO reject(long friendId);
 
-    List<FriendshipDTO> findFriendshipsWithName(long currUserId, String searchName);
-
+    // 找交友通知
     List<FriendshipDTO> findFriendshipsNotification(long currUserId);
 
+    List<FriendshipDTO> findFriendshipsWithName(long currUserId, String searchName);
+
     List<FriendshipDTO> findNoFriendshipsWithName(long currUserId, String searchName);
+
+    // 人名搜尋交友
+    List<FriendshipDTO> findAllFriendshipsWithName(long currUserId, String searchName);
 }
