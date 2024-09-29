@@ -17,4 +17,6 @@ public interface ChatService {
     ChatLogDTO updateChatLog(ChatLogReqDTO dto);
 
     List<ChatroomDTO> findChatroomsByUserId(long userId);
+
+    List<ChatroomDTO> findUnreadChatroomsByUserId(long userId);
 }

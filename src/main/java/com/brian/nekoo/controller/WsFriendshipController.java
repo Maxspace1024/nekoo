@@ -31,7 +31,26 @@ public class WsFriendshipController {
         User user = userService.checkLoginValid(accessor);
         if (user != null) {
             long userId = user.getId();
-            messagingTemplate.convertAndSend("/topic/friendship/" + userId, List.of(FriendshipDTO.builder().build()));
+            messagingTemplate.convertAndSend(
+                "/topic/friendship/" + userId,
+                friendshipService.findAllFriendshipsWithName(userId, dto.getSearchName())
+            );
+        }
+    }
+
+    @MessageMapping("/friendship/notification")
+    public void friendshipNotification(@Payload FriendshipReqDTO dto, SimpMessageHeaderAccessor accessor) {
+        User user = userService.checkLoginValid(accessor);
+        if (user != null) {
+            long userId = user.getId();
+            List<FriendshipDTO> dtos = friendshipService.findFriendshipsNotification(userId);
+            for (FriendshipDTO friendshipDTO : dtos) {
+                log.info(friendshipDTO);
+            }
+            messagingTemplate.convertAndSend(
+                "/topic/friendship/notification/" + userId,
+                dtos
+            );
         }
     }
 }

@@ -147,9 +147,9 @@ public class FriendshipServcieImpl implements FriendshipService {
         List<User> users = userRepository.findNoFriendshipsWithName(currUserId, searchName);
         return users.stream().map(
             user -> FriendshipDTO.builder()
-                .senderUserId(user.getId())
-                .senderUserName(user.getName())
-                .senderUserAvatarPath(user.getAvatarPath())
+                .receiverUserId(user.getId())
+                .receiverUserName(user.getName())
+                .receiverUserAvatarPath(user.getAvatarPath())
                 .friendshipState(FriendshipStateEnum.NONE.ordinal())
                 .build()
         ).toList();

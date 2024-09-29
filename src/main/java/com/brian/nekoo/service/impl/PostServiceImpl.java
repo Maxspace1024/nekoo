@@ -7,6 +7,7 @@ import com.brian.nekoo.entity.mongo.Post;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.AssetTypeEnum;
 import com.brian.nekoo.repository.mongo.AssetRepository;
+import com.brian.nekoo.repository.mongo.DanmakuRepository;
 import com.brian.nekoo.repository.mongo.PostRepository;
 import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.PostService;
@@ -26,6 +27,7 @@ import java.util.Optional;
 public class PostServiceImpl implements PostService {
 
     private final S3Service s3Service;
+    private final DanmakuRepository danmakuRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AssetRepository assetRepository;
@@ -130,7 +132,8 @@ public class PostServiceImpl implements PostService {
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO dto = PostDTO.getDTO(post, user);
-            dto.setTotalDanmakuCount(5L);
+            String assetId = dto.getAssets().get(0).getId(); // need optimiz
+            dto.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
             return dto;
         }).toList();
         return postDTOs;

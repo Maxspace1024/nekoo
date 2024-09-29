@@ -29,4 +29,13 @@ public class WsChatroomController {
             messagingTemplate.convertAndSend("/topic/myChatroom/" + userId, chatService.findChatroomsByUserId(userId));
         }
     }
+
+    @MessageMapping("/message/notification")
+    public void messageNotification(SimpMessageHeaderAccessor accessor) {
+        User user = userService.checkLoginValid(accessor);
+        if (user != null) {
+            long userId = user.getId();
+            messagingTemplate.convertAndSend("/topic/message/notification/" + userId, chatService.findUnreadChatroomsByUserId(userId));
+        }
+    }
 }

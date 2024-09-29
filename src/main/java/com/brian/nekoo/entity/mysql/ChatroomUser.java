@@ -22,6 +22,10 @@ public class ChatroomUser {
     @Column(name = "room_name")
     private String roomName;
 
+    // 已讀狀態
+    @Column(name = "read_state")
+    private Integer readState;
+
     @ManyToOne
     @JoinColumn(name = "chatroom_id")
     @JsonIgnore

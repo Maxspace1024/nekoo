@@ -11,6 +11,7 @@ import com.brian.nekoo.entity.mysql.ChatroomUser;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.AssetTypeEnum;
 import com.brian.nekoo.enumx.ChatroomTypeEnum;
+import com.brian.nekoo.enumx.ReadStateEnum;
 import com.brian.nekoo.repository.mongo.AssetRepository;
 import com.brian.nekoo.repository.mongo.ChatLogRepository;
 import com.brian.nekoo.repository.mysql.ChatroomRepository;
@@ -70,6 +71,7 @@ public class ChatServiceImpl implements ChatService {
                 chatroomUsers.add(
                     ChatroomUser.builder()
                         .roomName(roomName)
+                        .readState(ReadStateEnum.SEEN.ordinal())
                         .user(user)
                         .chatroom(chatroom)
                         .build()
@@ -220,5 +222,26 @@ public class ChatServiceImpl implements ChatService {
                 }
                 return builder.build();
             }).toList();
+    }
+
+    @Override
+    public List<ChatroomDTO> findUnreadChatroomsByUserId(long userId) {
+        List<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserIdAndReadState(userId, ReadStateEnum.UNREAD.ordinal());
+        List<ChatroomDTO> chatroomDTOs = chatroomUsers.stream().map(chatroomUser -> {
+            Chatroom chatroom = chatroomUser.getChatroom();
+            ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
+            ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
+                .chatroomId(chatroom.getId())
+                .chatroomUuid(chatroom.getUuid())
+                .chatroomName(chatroomUser.getRoomName())
+                .chatroomAvatarPath(chatroom.getAvatarPath());
+            if (lastChatLog != null) {
+                builder.lastContent(lastChatLog.getContent())
+                    .lastCreateAt(lastChatLog.getCreateAt());
+            }
+            return builder.build();
+        }).toList();
+
+        return chatroomDTOs;
     }
 }
