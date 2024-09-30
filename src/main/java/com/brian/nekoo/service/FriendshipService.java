@@ -15,6 +15,8 @@ public interface FriendshipService {
 
     FriendshipDTO reject(long friendId);
 
+    FriendshipDTO update(long friendId, int state);
+
     // 找交友通知
     List<FriendshipDTO> findFriendshipsNotification(long currUserId);
 

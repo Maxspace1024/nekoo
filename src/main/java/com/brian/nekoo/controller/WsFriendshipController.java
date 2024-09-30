@@ -53,4 +53,33 @@ public class WsFriendshipController {
             );
         }
     }
+
+    @MessageMapping("/friendship/invite")
+    public void invite(@Payload FriendshipReqDTO dto, SimpMessageHeaderAccessor accessor) {
+        User user = userService.checkLoginValid(accessor);
+        if (user != null) {
+            long userId = user.getId();
+            messagingTemplate.convertAndSend(
+                "/topic/friendship/notification/new/" + userId,
+                friendshipService.invite(dto.getSenderUserId(), dto.getReceiverUserId())
+            );
+        }
+    }
+
+    @MessageMapping("/friendship/update")
+    public void update(@Payload FriendshipReqDTO dto, SimpMessageHeaderAccessor accessor) {
+        User user = userService.checkLoginValid(accessor);
+        if (user != null) {
+            long userId = user.getId();
+            FriendshipDTO friendshipDTO = friendshipService.update(dto.getFriendshipId(), dto.getState());
+            messagingTemplate.convertAndSend(
+                "/topic/friendship/notification/new/" + friendshipDTO.getSenderUserId(),
+                friendshipDTO
+            );
+            messagingTemplate.convertAndSend(
+                "/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(),
+                friendshipDTO
+            );
+        }
+    }
 }

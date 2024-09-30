@@ -2,7 +2,7 @@ package com.brian.nekoo.controller;
 
 import com.brian.nekoo.dto.MessageWrapper;
 import com.brian.nekoo.dto.PostDTO;
-import com.brian.nekoo.dto.req.PostReqDTO;
+import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
@@ -27,7 +27,7 @@ public class PostController {
     private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute PostReqDTO dto) {
+    public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
         String authToken = request.getHeader(HttpHeaders.AUTHORIZATION);
         MessageWrapper<Object> mw = userService.checkLoginValidation(authToken);
         if (mw.isSuccess()) {

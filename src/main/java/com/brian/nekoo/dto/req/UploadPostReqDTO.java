@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class PostReqDTO {
+public class UploadPostReqDTO {
     private String postId;
     private Long userId;
     private Integer privacy;

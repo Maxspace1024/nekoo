@@ -2,6 +2,7 @@ package com.brian.nekoo.service.impl;
 
 import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
+import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mongo.Asset;
 import com.brian.nekoo.entity.mongo.Post;
 import com.brian.nekoo.entity.mysql.User;
@@ -14,6 +15,8 @@ import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -33,7 +36,7 @@ public class PostServiceImpl implements PostService {
     private final AssetRepository assetRepository;
 
     @Override
-    public PostDTO createPost(PostReqDTO dto) {
+    public PostDTO createPost(UploadPostReqDTO dto) {
         List<String> uuidFilenames = new ArrayList<>();
         List<Asset> assets = new ArrayList<>();
         PostDTO postDTO = null;
@@ -70,6 +73,7 @@ public class PostServiceImpl implements PostService {
 
             User user = userRepository.findById(post.getUserId()).get();
             postDTO = PostDTO.getDTO(post, user);
+            postDTO.setTotalDanmakuCount(0L);
         } catch (Exception e) {
             try {
                 for (String uuidFilename : uuidFilenames) {
@@ -84,7 +88,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDTO deletePost(PostReqDTO dto) {
+    public PostDTO deletePost(UploadPostReqDTO dto) {
         Optional<Post> oPost = postRepository.findById(dto.getPostId());
         Post post = null;
         if (oPost.isPresent()) {
@@ -102,7 +106,7 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PostDTO updatePost(PostReqDTO dto) {
+    public PostDTO updatePost(UploadPostReqDTO dto) {
         Optional<Post> oPost = postRepository.findById(dto.getPostId());
         Post post = null;
         if (oPost.isPresent()) {
@@ -128,13 +132,27 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDTO> findPost() {
-        List<Post> posts = postRepository.findAllByOrderByCreateAtDesc();
+        List<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(null);
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO dto = PostDTO.getDTO(post, user);
             String assetId = dto.getAssets().get(0).getId(); // need optimiz
             dto.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
             return dto;
+        }).toList();
+        return postDTOs;
+    }
+
+    @Override
+    public List<PostDTO> findPostByPage(PostReqDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), 4);
+        List<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(pageable);
+        List<PostDTO> postDTOs = posts.stream().map(post -> {
+            User user = userRepository.findById(post.getUserId()).get();
+            PostDTO postDTO = PostDTO.getDTO(post, user);
+            String assetId = postDTO.getAssets().get(0).getId(); // need optimiz
+            postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
+            return postDTO;
         }).toList();
         return postDTOs;
     }

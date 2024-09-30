@@ -1,6 +1,7 @@
 package com.brian.nekoo.controller;
 
 import com.brian.nekoo.dto.req.PostReqDTO;
+import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
@@ -24,15 +25,21 @@ public class WsPostController {
     private final SimpUserRegistry simpUserRegistry;
 
     @MessageMapping("/post")
-    public void getPost(SimpMessageHeaderAccessor accessor) {
-        messagingTemplate.convertAndSend("/topic/post", postService.findPost());
-    }
-
-    @MessageMapping("/post/delete")
-    public void deletePost(@Payload PostReqDTO dto, SimpMessageHeaderAccessor accessor) {
+    public void getPost(@Payload PostReqDTO dto, SimpMessageHeaderAccessor accessor) {
         User user = userService.checkLoginValid(accessor);
         if (user != null) {
             long userId = user.getId();
+            log.info(dto);
+            messagingTemplate.convertAndSend("/topic/post/" + userId, postService.findPostByPage(dto));
+        }
+    }
+
+    @MessageMapping("/post/delete")
+    public void deletePost(@Payload UploadPostReqDTO dto, SimpMessageHeaderAccessor accessor) {
+        User user = userService.checkLoginValid(accessor);
+        if (user != null) {
+            long userId = user.getId();
+            log.info(dto);
             messagingTemplate.convertAndSend("/topic/post/delete", postService.deletePost(dto));
         }
     }

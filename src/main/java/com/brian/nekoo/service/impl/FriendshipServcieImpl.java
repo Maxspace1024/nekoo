@@ -127,6 +127,22 @@ public class FriendshipServcieImpl implements FriendshipService {
     }
 
     @Override
+    public FriendshipDTO update(long friendId, int state) {
+        Optional<Friendship> oFriend = friendshipRepository.findById(friendId);
+        Friendship friendship = null;
+        if (oFriend.isPresent()) {
+            Instant now = Instant.now();
+            friendship = oFriend.get();
+            friendship.setState(state);
+            friendship.setModifyAt(now);
+            friendship = friendshipRepository.save(friendship);
+        } else {
+
+        }
+        return FriendshipDTO.getDTO(friendship);
+    }
+
+    @Override
     public List<FriendshipDTO> findFriendshipsWithName(long currUserId, String searchName) {
         List<Friendship> friendships = friendshipRepository.findFriendshipsWithName(currUserId, searchName);
         return friendships.stream().map(

@@ -244,4 +244,9 @@ public class ChatServiceImpl implements ChatService {
 
         return chatroomDTOs;
     }
+
+    @Override
+    public Chatroom findChatroomByChatroomId(long chatroomId) {
+        return chatroomRepository.findById(chatroomId).get();
+    }
 }
