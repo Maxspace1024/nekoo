@@ -37,15 +37,6 @@ public class WsChatroomController {
         }
     }
 
-    @MessageMapping("/myChatroom")
-    public void getChannels(SimpMessageHeaderAccessor accessor) {
-        User user = userService.checkLoginValid(accessor);
-        if (user != null) {
-            long userId = user.getId();
-            messagingTemplate.convertAndSend("/topic/myChatroom/" + userId, chatService.findChatroomsByUserId(userId));
-        }
-    }
-
     @MessageMapping("/message/notification")
     public void messageNotification(SimpMessageHeaderAccessor accessor) {
         User user = userService.checkLoginValid(accessor);

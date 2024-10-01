@@ -1,5 +1,6 @@
 package com.brian.nekoo.service;
 
+import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
@@ -15,5 +16,5 @@ public interface PostService {
 
     List<PostDTO> findPost();
 
-    List<PostDTO> findPostByPage(PostReqDTO dto);
+    PageWrapper<PostDTO> findPostByPage(PostReqDTO dto);
 }

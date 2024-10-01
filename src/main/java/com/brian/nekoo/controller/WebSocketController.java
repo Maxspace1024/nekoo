@@ -13,9 +13,5 @@ public class WebSocketController {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final SimpUserRegistry simpUserRegistry;
-
-//    @MessageMapping("/danmaku")
-//    public void danmaku(SimpMessageHeaderAccessor accessor) {
-//        messagingTemplate.convertAndSend("/topic/danmaku/", "x");
-//    }
+    
 }

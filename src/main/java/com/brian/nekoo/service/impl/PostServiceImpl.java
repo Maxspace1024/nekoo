@@ -1,5 +1,6 @@
 package com.brian.nekoo.service.impl;
 
+import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
@@ -15,6 +16,7 @@ import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -132,7 +134,7 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public List<PostDTO> findPost() {
-        List<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(null);
+        Page<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(null);
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO dto = PostDTO.getDTO(post, user);
@@ -144,9 +146,9 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public List<PostDTO> findPostByPage(PostReqDTO dto) {
+    public PageWrapper<PostDTO> findPostByPage(PostReqDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), 4);
-        List<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(pageable);
+        Page<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(pageable);
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO postDTO = PostDTO.getDTO(post, user);
@@ -154,6 +156,9 @@ public class PostServiceImpl implements PostService {
             postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
             return postDTO;
         }).toList();
-        return postDTOs;
+        return PageWrapper.<PostDTO>builder()
+            .page(postDTOs)
+            .totalPages(posts.getTotalPages())
+            .build();
     }
 }

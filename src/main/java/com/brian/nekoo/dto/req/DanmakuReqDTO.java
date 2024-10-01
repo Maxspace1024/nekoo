@@ -21,7 +21,7 @@ public class DanmakuReqDTO {
     // 本彈幕對哪個影片/圖片進行留言
     private String assetId;
 
-    // 彈幕型態(動態/靜態)
+    // 彈幕型態(靜態/動態)
     private Integer type;
 
     // 彈幕顯示狀態

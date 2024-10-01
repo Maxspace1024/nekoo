@@ -10,7 +10,7 @@ import java.util.List;
 
 @Repository
 public interface PostRepository extends MongoRepository<Post, String> {
-    List<Post> findAllByRemoveAtIsNullOrderByCreateAtDesc(Pageable pageable);
+    Page<Post> findAllByRemoveAtIsNullOrderByCreateAtDesc(Pageable pageable);
 
     List<Post> findPostByUserId(long userId);
 

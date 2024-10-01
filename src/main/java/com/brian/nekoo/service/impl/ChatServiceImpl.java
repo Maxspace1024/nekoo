@@ -2,6 +2,7 @@ package com.brian.nekoo.service.impl;
 
 import com.brian.nekoo.dto.ChatLogDTO;
 import com.brian.nekoo.dto.ChatroomDTO;
+import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.req.ChatLogReqDTO;
 import com.brian.nekoo.dto.req.ChatroomReqDTO;
 import com.brian.nekoo.entity.mongo.Asset;
@@ -22,6 +23,9 @@ import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -201,9 +205,10 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
-    public List<ChatroomDTO> findChatroomsByUserId(long userId) {
-        List<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserId(userId);
-        return chatroomUsers.stream()
+    public PageWrapper<ChatroomDTO> findChatroomsByUserId(long userId, ChatroomReqDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), 16);
+        Page<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserId(userId, pageable);
+        List<ChatroomDTO> chatroomDTOs = chatroomUsers.stream()
             .map(chatroomUser -> {
                 Chatroom chatroom = chatroomUser.getChatroom();
                 ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
@@ -222,6 +227,10 @@ public class ChatServiceImpl implements ChatService {
                 }
                 return builder.build();
             }).toList();
+        return PageWrapper.<ChatroomDTO>builder()
+            .page(chatroomDTOs)
+            .totalPages(chatroomUsers.getTotalPages())
+            .build();
     }
 
     @Override

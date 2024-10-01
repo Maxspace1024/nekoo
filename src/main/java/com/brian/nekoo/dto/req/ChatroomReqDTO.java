@@ -14,7 +14,8 @@ import java.util.List;
 public class ChatroomReqDTO {
     private Long chatroomId;
     private String chatroomName;
-    private int chatroomType;
+    private Integer chatroomType;
     private String avatarPath;
     private List<Long> userIds;
+    private Integer page;
 }

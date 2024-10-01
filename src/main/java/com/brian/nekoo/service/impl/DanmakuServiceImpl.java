@@ -10,10 +10,12 @@ import com.brian.nekoo.service.DanmakuService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -30,9 +32,10 @@ public class DanmakuServiceImpl implements DanmakuService {
         String uuidFilename = null;
         try {
             MultipartFile file = dto.getImage();
-            uuidFilename = FileUtil.generateUuidFileName(file.getOriginalFilename());
-
-            s3Service.uploadFile(file, uuidFilename);
+            if (file != null && !file.isEmpty()) {
+                uuidFilename = FileUtil.generateUuidFileName(file.getOriginalFilename());
+                s3Service.uploadFile(file, uuidFilename);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -144,5 +147,15 @@ public class DanmakuServiceImpl implements DanmakuService {
         } else {
             return null;
         }
+    }
+
+    @Override
+    public List<DanmakuDTO> findDanmakusByAssetId(DanmakuReqDTO dto) {
+        Page<Danmaku> danmakus = danmakuRepository.findByAssetId(dto.getAssetId(), null);
+        return danmakus.stream().map(danmaku -> {
+                User user = userRepository.findById(danmaku.getUserId()).get();
+                return DanmakuDTO.getDTO(danmaku, user);
+            }
+        ).toList();
     }
 }
