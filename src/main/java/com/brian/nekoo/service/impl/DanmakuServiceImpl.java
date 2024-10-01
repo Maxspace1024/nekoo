@@ -151,11 +151,10 @@ public class DanmakuServiceImpl implements DanmakuService {
 
     @Override
     public List<DanmakuDTO> findDanmakusByAssetId(DanmakuReqDTO dto) {
-        Page<Danmaku> danmakus = danmakuRepository.findByAssetId(dto.getAssetId(), null);
+        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdOrderByCreateAtDesc(dto.getAssetId(), null);
         return danmakus.stream().map(danmaku -> {
-                User user = userRepository.findById(danmaku.getUserId()).get();
-                return DanmakuDTO.getDTO(danmaku, user);
-            }
-        ).toList();
+            User user = userRepository.findById(danmaku.getUserId()).get();
+            return DanmakuDTO.getDTO(danmaku, user);
+        }).toList();
     }
 }

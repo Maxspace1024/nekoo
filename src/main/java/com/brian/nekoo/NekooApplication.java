@@ -10,4 +10,4 @@ public class NekooApplication {
         SpringApplication.run(NekooApplication.class, args);
     }
 
-}   
+}

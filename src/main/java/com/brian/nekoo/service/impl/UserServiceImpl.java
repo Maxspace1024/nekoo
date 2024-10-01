@@ -43,6 +43,8 @@ public class UserServiceImpl implements UserService {
             map.put("jwt", token);
             map.put("userId", user.getId());
             map.put("email", user.getEmail());
+            map.put("userName", user.getName());
+            map.put("userAvatarPath", user.getAvatarPath());
             builder.isSuccess(true)
                 .data(map);
             user.setWebToken(token);

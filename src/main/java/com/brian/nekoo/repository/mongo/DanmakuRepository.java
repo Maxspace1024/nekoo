@@ -8,7 +8,7 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface DanmakuRepository extends MongoRepository<Danmaku, String> {
-    Page<Danmaku> findByAssetId(String assetId, Pageable pageable);
+    Page<Danmaku> findByAssetIdOrderByCreateAtDesc(String assetId, Pageable pageable);
 
     long countByAssetId(String assetId);
 }
