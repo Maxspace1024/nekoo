@@ -73,8 +73,10 @@ public class FriendshipController {
             friendshipDTO = (FriendshipDTO) map.get("friendshipDTO");
             chatroomDTO = (ChatroomDTO) map.get("chatroomDTO");
             chatroomDTO = chatService.findChatroomByUserIdAndChatroomId(user.getId(), chatroomDTO.getChatroomId());
-            if (chatroomDTO != null)
-                messagingTemplate.convertAndSend("/topic/chatroom/new/" + user.getId(), chatroomDTO);
+            if (chatroomDTO != null) {
+                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getSenderUserId(), chatroomDTO);
+                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getReceiverUserId(), chatroomDTO);
+            }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }
