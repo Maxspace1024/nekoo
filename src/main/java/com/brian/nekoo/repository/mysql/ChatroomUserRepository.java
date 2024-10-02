@@ -6,9 +6,12 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface ChatroomUserRepository extends JpaRepository<ChatroomUser, Long> {
     Page<ChatroomUser> findByUserId(long userId, Pageable pageable);
 
     List<ChatroomUser> findByUserIdAndReadState(long userId, int readState);
+
+    Optional<ChatroomUser> findByUserIdAndChatroomId(long userId, long chatroomId);
 }

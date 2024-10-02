@@ -255,6 +255,27 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public ChatroomDTO findChatroomByUserIdAndChatroomId(long userId, long chatroomId) {
+        Optional<ChatroomUser> oChatroomUser = chatroomUserRepository.findByUserIdAndChatroomId(userId, chatroomId);
+        if (oChatroomUser.isPresent()) {
+            ChatroomUser chatroomUser = oChatroomUser.get();
+            Chatroom chatroom = chatroomUser.getChatroom();
+            ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
+            ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
+                .chatroomId(chatroom.getId())
+                .chatroomUuid(chatroom.getUuid())
+                .chatroomName(chatroomUser.getRoomName())
+                .chatroomAvatarPath(chatroom.getAvatarPath());
+            if (lastChatLog != null) {
+                builder.lastContent(lastChatLog.getContent())
+                    .lastCreateAt(lastChatLog.getCreateAt());
+            }
+            return builder.build();
+        }
+        return null;
+    }
+
+    @Override
     public Chatroom findChatroomByChatroomId(long chatroomId) {
         return chatroomRepository.findById(chatroomId).get();
     }

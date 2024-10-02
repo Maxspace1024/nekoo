@@ -1,15 +1,18 @@
 package com.brian.nekoo.controller;
 
+import com.brian.nekoo.dto.ChatroomDTO;
 import com.brian.nekoo.dto.FriendshipDTO;
 import com.brian.nekoo.dto.MessageWrapper;
 import com.brian.nekoo.dto.req.FriendshipReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.FriendshipService;
 import com.brian.nekoo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.ResponseEntity;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -17,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/api/v1")
@@ -24,8 +28,10 @@ import java.util.List;
 @Log4j2
 public class FriendshipController {
 
+    private final ChatService chatService;
     private final FriendshipService friendshipService;
     private final UserService userService;
+    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping("/friendship/findFriendship")
     public ResponseEntity<Object> findFriendship(HttpServletRequest request, @RequestBody FriendshipReqDTO dto) {
@@ -61,8 +67,14 @@ public class FriendshipController {
     public ResponseEntity<Object> approve(HttpServletRequest request, @RequestBody FriendshipReqDTO dto) {
         User user = userService.checkLoginValid(request);
         FriendshipDTO friendshipDTO = null;
+        ChatroomDTO chatroomDTO = null;
         if (user != null) {
-            friendshipDTO = friendshipService.approve(dto.getFriendshipId());
+            Map<String, Object> map = friendshipService.approve(dto.getFriendshipId());
+            friendshipDTO = (FriendshipDTO) map.get("friendshipDTO");
+            chatroomDTO = (ChatroomDTO) map.get("chatroomDTO");
+            chatroomDTO = chatService.findChatroomByUserIdAndChatroomId(user.getId(), chatroomDTO.getChatroomId());
+            if (chatroomDTO != null)
+                messagingTemplate.convertAndSend("/topic/chatroom/new/" + user.getId(), chatroomDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }

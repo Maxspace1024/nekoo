@@ -18,5 +18,5 @@ public class ChatroomDTO {
     private String chatroomAvatarPath;
     private String lastContent;
     private Instant lastCreateAt;
-    // readState?
+    private Boolean readState;
 }

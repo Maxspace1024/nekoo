@@ -3,6 +3,7 @@ package com.brian.nekoo.service;
 import com.brian.nekoo.dto.FriendshipDTO;
 
 import java.util.List;
+import java.util.Map;
 
 public interface FriendshipService {
     FriendshipDTO findFriendship(long userId1, long userId2);
@@ -11,7 +12,7 @@ public interface FriendshipService {
 
     FriendshipDTO pending(long friendId);
 
-    FriendshipDTO approve(long friendId);
+    Map<String, Object> approve(long friendId);
 
     FriendshipDTO reject(long friendId);
 

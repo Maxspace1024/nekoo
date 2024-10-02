@@ -22,5 +22,7 @@ public interface ChatService {
 
     List<ChatroomDTO> findUnreadChatroomsByUserId(long userId);
 
+    ChatroomDTO findChatroomByUserIdAndChatroomId(long userId, long chatroomId);
+
     Chatroom findChatroomByChatroomId(long chatroomId);
 }

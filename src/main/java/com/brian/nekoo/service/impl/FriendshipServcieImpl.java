@@ -1,5 +1,6 @@
 package com.brian.nekoo.service.impl;
 
+import com.brian.nekoo.dto.ChatroomDTO;
 import com.brian.nekoo.dto.FriendshipDTO;
 import com.brian.nekoo.dto.req.ChatroomReqDTO;
 import com.brian.nekoo.entity.mysql.Friendship;
@@ -14,10 +15,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -86,9 +84,11 @@ public class FriendshipServcieImpl implements FriendshipService {
     }
 
     @Override
-    public FriendshipDTO approve(long friendId) {
+    public Map<String, Object> approve(long friendId) {
         Optional<Friendship> oFriend = friendshipRepository.findById(friendId);
+        Map<String, Object> map = new HashMap<>();
         Friendship friendship = null;
+        ChatroomDTO chatroomDTO = null;
         if (oFriend.isPresent()) {
             Instant now = Instant.now();
             friendship = oFriend.get();
@@ -103,11 +103,11 @@ public class FriendshipServcieImpl implements FriendshipService {
                 .chatroomType(ChatroomTypeEnum.PRIVATE.ordinal())
                 .chatroomName("")
                 .build();
-            chatService.createChatroom(dto);
-        } else {
-
+            chatroomDTO = chatService.createChatroom(dto);
         }
-        return FriendshipDTO.getDTO(friendship);
+        map.put("friendshipDTO", FriendshipDTO.getDTO(friendship));
+        map.put("chatroomDTO", chatroomDTO);
+        return map;
     }
 
     @Override
