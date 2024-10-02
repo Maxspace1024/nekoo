@@ -15,6 +15,7 @@ import java.util.List;
 public class ChatLogReqDTO {
     private String chatLogId;
     private Long chatroomId;
+    private String chatroomUuid;
     private Long userId;
     private String content;
     private List<MultipartFile> files;
