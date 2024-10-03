@@ -10,7 +10,6 @@ import com.brian.nekoo.service.DanmakuService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -151,7 +150,9 @@ public class DanmakuServiceImpl implements DanmakuService {
 
     @Override
     public List<DanmakuDTO> findDanmakusByAssetId(DanmakuReqDTO dto) {
-        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdOrderByCreateAtDesc(dto.getAssetId(), null);
+//        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdOrderByCreateAtDesc(dto.getAssetId(), null);
+//        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdWithQuery(dto.getAssetId(), null);
+        List<Danmaku> danmakus = danmakuRepository.findByAssetId(dto.getAssetId());
         return danmakus.stream().map(danmaku -> {
             User user = userRepository.findById(danmaku.getUserId()).get();
             return DanmakuDTO.getDTO(danmaku, user);

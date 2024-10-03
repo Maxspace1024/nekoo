@@ -31,6 +31,19 @@ public class UserController {
     private final UserService userService;
     private final UserDetailService userDetailService;
 
+    @PostMapping("/user/auth")
+    public ResponseEntity<?> auth(HttpServletRequest request) {
+        User user = userService.checkLoginValid(request);
+        Map<String, Object> map = new HashMap<>();
+        if (user != null) {
+            map.put("userId", user.getId());
+            map.put("userName", user.getName());
+            map.put("userAvatarPath", user.getAvatarPath());
+            map.put("email", user.getEmail());
+        }
+        return MessageWrapper.toResponseEntityOk(map);
+    }
+
     @PostMapping("/user/signin")
     public ResponseEntity<?> signin(HttpServletResponse response, @RequestBody SigninReqDTO dto) {
         MessageWrapper<Object> mw = userService.signin(dto);

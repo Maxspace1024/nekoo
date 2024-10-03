@@ -205,6 +205,16 @@ public class ChatServiceImpl implements ChatService {
     }
 
     @Override
+    public List<ChatLogDTO> findChatLogsByChatroomId(ChatLogReqDTO dto) {
+        List<ChatLog> chatLogs = chatLogRepository.findAllByChatroomId(dto.getChatroomId(), null).getContent();
+        return chatLogs.stream().map(chatlog -> {
+                User user = userRepository.findById(chatlog.getUserId()).get();
+                return ChatLogDTO.getDTO(chatlog, user);
+            }
+        ).toList();
+    }
+
+    @Override
     public PageWrapper<ChatroomDTO> findChatroomsByUserId(long userId, ChatroomReqDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), 16);
         Page<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserId(userId, pageable);

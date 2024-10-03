@@ -18,6 +18,8 @@ public interface ChatService {
 
     ChatLogDTO updateChatLog(ChatLogReqDTO dto);
 
+    List<ChatLogDTO> findChatLogsByChatroomId(ChatLogReqDTO dto);
+
     PageWrapper<ChatroomDTO> findChatroomsByUserId(long userId, ChatroomReqDTO dto);
 
     List<ChatroomDTO> findUnreadChatroomsByUserId(long userId);

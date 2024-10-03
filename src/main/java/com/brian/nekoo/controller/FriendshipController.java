@@ -49,6 +49,8 @@ public class FriendshipController {
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
             friendshipDTO = friendshipService.invite(dto.getSenderUserId(), dto.getReceiverUserId());
+            if (friendshipDTO != null)
+                messagingTemplate.convertAndSend("/topic/friendship/new/" + user.getId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }
@@ -59,6 +61,8 @@ public class FriendshipController {
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
             friendshipDTO = friendshipService.pending(dto.getFriendshipId());
+            if (friendshipDTO != null)
+                messagingTemplate.convertAndSend("/topic/friendship/new/" + user.getId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }
@@ -68,14 +72,17 @@ public class FriendshipController {
         User user = userService.checkLoginValid(request);
         FriendshipDTO friendshipDTO = null;
         ChatroomDTO chatroomDTO = null;
+        ChatroomDTO senderChatroomDTO = null;
+        ChatroomDTO receiverChatroomDTO = null;
         if (user != null) {
             Map<String, Object> map = friendshipService.approve(dto.getFriendshipId());
             friendshipDTO = (FriendshipDTO) map.get("friendshipDTO");
             chatroomDTO = (ChatroomDTO) map.get("chatroomDTO");
-            chatroomDTO = chatService.findChatroomByUserIdAndChatroomId(user.getId(), chatroomDTO.getChatroomId());
-            if (chatroomDTO != null) {
-                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getSenderUserId(), chatroomDTO);
-                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getReceiverUserId(), chatroomDTO);
+            senderChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getSenderUserId(), chatroomDTO.getChatroomId());
+            receiverChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getReceiverUserId(), chatroomDTO.getChatroomId());
+            if (senderChatroomDTO != null && receiverChatroomDTO != null) {
+                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getSenderUserId(), senderChatroomDTO);
+                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getReceiverUserId(), receiverChatroomDTO);
             }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);

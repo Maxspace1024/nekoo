@@ -15,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 import java.util.List;
@@ -47,7 +48,7 @@ public class DanmakuController {
     }
 
     @PostMapping(value = "/danmaku/log")
-    public ResponseEntity<Object> findDanmakuLog(HttpServletRequest request, @ModelAttribute DanmakuReqDTO dto) {
+    public ResponseEntity<Object> findDanmakuLog(HttpServletRequest request, @RequestBody DanmakuReqDTO dto) {
         User user = userService.checkLoginValid(request);
         List<DanmakuDTO> danmakuDTOs = null;
         if (user != null) {

@@ -21,6 +21,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
@@ -54,5 +57,15 @@ public class ChatroomController {
                 messagingTemplate.convertAndSend("/topic/chatroom/" + dto.getChatroomUuid(), chatLogDTO);
         }
         return MessageWrapper.toResponseEntityOk(chatLogDTO);
+    }
+
+    @PostMapping(value = "/chat/log")
+    public ResponseEntity<Object> chatLog(HttpServletRequest request, @RequestBody ChatLogReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        List<ChatLogDTO> chatLogDTOs = new ArrayList<>();
+        if (user != null) {
+            chatLogDTOs = chatService.findChatLogsByChatroomId(dto);
+        }
+        return MessageWrapper.toResponseEntityOk(chatLogDTOs);
     }
 }
