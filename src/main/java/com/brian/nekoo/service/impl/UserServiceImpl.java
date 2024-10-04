@@ -125,7 +125,7 @@ public class UserServiceImpl implements UserService {
             String username = jwtUtil.extractUsername(token);
 
             if (token != null && jwtUtil.validateToken(token, username)) {
-                return findUserByEmail("asdf@gmail.com");
+                return findUserByEmail(username);
             } else {
                 return null;
             }
