@@ -49,8 +49,9 @@ public class FriendshipController {
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
             friendshipDTO = friendshipService.invite(dto.getSenderUserId(), dto.getReceiverUserId());
-            if (friendshipDTO != null)
-                messagingTemplate.convertAndSend("/topic/friendship/new/" + user.getId(), friendshipDTO);
+            if (friendshipDTO != null) {
+                messagingTemplate.convertAndSend("/topic/friendship/new/" + dto.getReceiverUserId(), friendshipDTO);
+            }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }

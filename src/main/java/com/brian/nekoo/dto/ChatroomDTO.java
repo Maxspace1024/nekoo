@@ -16,6 +16,7 @@ public class ChatroomDTO {
     private String chatroomUuid;
     private String chatroomName;
     private String chatroomAvatarPath;
+    private String userName;
     private String lastContent;
     private Instant lastCreateAt;
     private Boolean readState;

@@ -24,8 +24,6 @@ import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -216,17 +214,19 @@ public class ChatServiceImpl implements ChatService {
 
     @Override
     public PageWrapper<ChatroomDTO> findChatroomsByUserId(long userId, ChatroomReqDTO dto) {
-        Pageable pageable = PageRequest.of(dto.getPage(), 16);
-        Page<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserId(userId, pageable);
+//        Pageable pageable = PageRequest.of(dto.getPage(), 16);
+        Page<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserId(userId, null);
         List<ChatroomDTO> chatroomDTOs = chatroomUsers.stream()
             .map(chatroomUser -> {
                 Chatroom chatroom = chatroomUser.getChatroom();
                 ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
+                User lastUser = userRepository.findById(lastChatLog.getUserId()).get();
                 User partnerUser = chatroomUser.getPartnerUser();
 
                 ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
                     .chatroomId(chatroom.getId())
-                    .chatroomUuid(chatroom.getUuid());
+                    .chatroomUuid(chatroom.getUuid())
+                    .userName(lastUser.getName());
                 if (partnerUser != null) {
                     builder.chatroomName(partnerUser.getName())
                         .chatroomAvatarPath(partnerUser.getAvatarPath());
