@@ -18,5 +18,9 @@ public interface DanmakuRepository extends MongoRepository<Danmaku, String> {
 
     List<Danmaku> findByAssetId(String assetId);
 
+    List<Danmaku> findByAssetIdAndRemoveAtIsNull(String assetId);
+
     long countByAssetId(String assetId);
+
+    long countByAssetIdAndRemoveAtIsNull(String assetId);
 }

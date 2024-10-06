@@ -38,11 +38,22 @@ public class DanmakuController {
             long userId = user.getId();
             dto.setUserId(userId);
             danmakuDTO = danmakuService.createDanmaku(dto);
-            if (danmakuDTO != null) {
-                log.info("/topic/asset/" + dto.getAssetId());
-                messagingTemplate.convertAndSend("/topic/asset/" + dto.getAssetId(), danmakuDTO);
-//                還要在總計數通知彈幕數量加一
-            }
+            if (danmakuDTO != null)
+                messagingTemplate.convertAndSend("/topic/danmaku/" + danmakuDTO.getAssetId(), danmakuDTO);
+        }
+        return MessageWrapper.toResponseEntityOk(danmakuDTO);
+    }
+
+    @PostMapping(value = "/danmaku/delete")
+    public ResponseEntity<Object> deleteDanmaku(HttpServletRequest request, @RequestBody DanmakuReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        DanmakuDTO danmakuDTO = null;
+        if (user != null) {
+            long userId = user.getId();
+            dto.setUserId(userId);
+            danmakuDTO = danmakuService.deleteDanmaku(dto);
+            if (danmakuDTO != null)
+                messagingTemplate.convertAndSend("/topic/danmaku/delete/" + danmakuDTO.getAssetId(), danmakuDTO);
         }
         return MessageWrapper.toResponseEntityOk(danmakuDTO);
     }

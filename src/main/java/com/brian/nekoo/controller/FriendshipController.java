@@ -50,7 +50,7 @@ public class FriendshipController {
         if (user != null) {
             friendshipDTO = friendshipService.invite(dto.getSenderUserId(), dto.getReceiverUserId());
             if (friendshipDTO != null) {
-                messagingTemplate.convertAndSend("/topic/friendship/new/" + dto.getReceiverUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
             }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
@@ -63,7 +63,7 @@ public class FriendshipController {
         if (user != null) {
             friendshipDTO = friendshipService.pending(dto.getFriendshipId());
             if (friendshipDTO != null)
-                messagingTemplate.convertAndSend("/topic/friendship/new/" + user.getId(), friendshipDTO);
+                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }
@@ -82,6 +82,8 @@ public class FriendshipController {
             senderChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getSenderUserId(), chatroomDTO.getChatroomId());
             receiverChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getReceiverUserId(), chatroomDTO.getChatroomId());
             if (senderChatroomDTO != null && receiverChatroomDTO != null) {
+                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getSenderUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
                 messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getSenderUserId(), senderChatroomDTO);
                 messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getReceiverUserId(), receiverChatroomDTO);
             }
@@ -95,6 +97,7 @@ public class FriendshipController {
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
             friendshipDTO = friendshipService.reject(dto.getFriendshipId());
+            messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + user.getId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }

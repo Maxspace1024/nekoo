@@ -40,6 +40,17 @@ public class PostController {
         return MessageWrapper.toResponseEntityOk(postDTO);
     }
 
+    @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<Object> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        PostDTO postDTO = null;
+        if (user != null) {
+            postDTO = postService.updatePost(dto);
+            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/update", postDTO);
+        }
+        return MessageWrapper.toResponseEntityOk(postDTO);
+    }
+
     @PostMapping("/post/delete")
     public ResponseEntity<Object> deletePost(HttpServletRequest request, @RequestBody UploadPostReqDTO dto) {
         User user = userService.checkLoginValid(request);

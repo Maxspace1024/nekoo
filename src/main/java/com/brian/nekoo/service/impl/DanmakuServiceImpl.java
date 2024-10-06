@@ -70,6 +70,9 @@ public class DanmakuServiceImpl implements DanmakuService {
         if (oDmk.isPresent()) {
             Instant now = Instant.now();
             Danmaku dmk = oDmk.get();
+            if (!dmk.getUserId().equals(dto.getUserId())) {
+                return null;
+            }
             dmk.setModifyAt(now);
             dmk.setRemoveAt(now);
             dmk = danmakuRepository.save(dmk);
@@ -150,9 +153,7 @@ public class DanmakuServiceImpl implements DanmakuService {
 
     @Override
     public List<DanmakuDTO> findDanmakusByAssetId(DanmakuReqDTO dto) {
-//        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdOrderByCreateAtDesc(dto.getAssetId(), null);
-//        Page<Danmaku> danmakus = danmakuRepository.findByAssetIdWithQuery(dto.getAssetId(), null);
-        List<Danmaku> danmakus = danmakuRepository.findByAssetId(dto.getAssetId());
+        List<Danmaku> danmakus = danmakuRepository.findByAssetIdAndRemoveAtIsNull(dto.getAssetId());
         return danmakus.stream().map(danmaku -> {
             User user = userRepository.findById(danmaku.getUserId()).get();
             return DanmakuDTO.getDTO(danmaku, user);

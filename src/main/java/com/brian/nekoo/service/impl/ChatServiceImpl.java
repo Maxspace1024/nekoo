@@ -220,20 +220,21 @@ public class ChatServiceImpl implements ChatService {
             .map(chatroomUser -> {
                 Chatroom chatroom = chatroomUser.getChatroom();
                 ChatLog lastChatLog = chatLogRepository.findFirstByChatroomIdOrderByCreateAtDesc(chatroom.getId());
-                User lastUser = userRepository.findById(lastChatLog.getUserId()).get();
+
                 User partnerUser = chatroomUser.getPartnerUser();
 
                 ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
                     .chatroomId(chatroom.getId())
-                    .chatroomUuid(chatroom.getUuid())
-                    .userName(lastUser.getName());
+                    .chatroomUuid(chatroom.getUuid());
                 if (partnerUser != null) {
                     builder.chatroomName(partnerUser.getName())
                         .chatroomAvatarPath(partnerUser.getAvatarPath());
                 }
                 if (lastChatLog != null) {
+                    User lastUser = userRepository.findById(lastChatLog.getUserId()).get();
                     builder.lastContent(lastChatLog.getContent())
-                        .lastCreateAt(lastChatLog.getCreateAt());
+                        .lastCreateAt(lastChatLog.getCreateAt())
+                        .lastUserName(lastUser.getName());
                 }
                 return builder.build();
             }).toList();

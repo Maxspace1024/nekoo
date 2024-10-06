@@ -16,6 +16,7 @@ import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.util.FileUtil;
 import lombok.RequiredArgsConstructor;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -109,9 +110,40 @@ public class PostServiceImpl implements PostService {
 
     @Override
     public PostDTO updatePost(UploadPostReqDTO dto) {
+        List<String> uuidFilenames = new ArrayList<>();
+        List<Asset> assets = new ArrayList<>();
         Optional<Post> oPost = postRepository.findById(dto.getPostId());
         Post post = null;
         if (oPost.isPresent()) {
+            try {
+                if (dto.getFiles() != null) {
+                    for (MultipartFile file : dto.getFiles()) {
+                        String uuidFilename = FileUtil.generateUuidFileName(file.getOriginalFilename());
+                        String fileExtension = FileUtil.extractFileExtension(uuidFilename);
+                        int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
+
+                        uuidFilenames.add(uuidFilename);
+                        s3Service.uploadFile(file, uuidFilename);
+                        Asset asset = Asset.builder()
+                            .path(uuidFilename)
+                            .type(assetType)
+                            .size(file.getSize())
+                            .build();
+                        assets.add(asset);
+                    }
+                    assets = assetRepository.saveAll(assets);
+                }
+            } catch (Exception e) {
+                try {
+                    for (String uuidFilename : uuidFilenames) {
+                        s3Service.deleteFile(uuidFilename);
+                    }
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                }
+            }
+
+
             Instant now = Instant.now();
             post = oPost.get();
             Integer privacy = dto.getPrivacy();
@@ -119,14 +151,26 @@ public class PostServiceImpl implements PostService {
                 post.setPrivacy(privacy);
             }
             String content = dto.getContent();
-            if (privacy != null) {
+            if (!Strings.isBlank(content)) {
                 post.setContent(content);
+            }
+            List<String> tags = dto.getHashtags();
+            if (tags != null) {
+                post.setHashtags(tags);
+            }
+            if (!assets.isEmpty()) {
+                post.setAssets(assets);
             }
             post.setModifyAt(now);
             post = postRepository.save(post);
 
             User user = userRepository.findById(post.getUserId()).get();
-            return PostDTO.getDTO(post, user);
+            PostDTO postDTO = PostDTO.getDTO(post, user);
+            List<Asset> postAssets = post.getAssets();
+            if (!postAssets.isEmpty()) {
+                postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(postAssets.get(0).getId()));
+            }
+            return postDTO;
         } else {
             return null;
         }
@@ -139,7 +183,7 @@ public class PostServiceImpl implements PostService {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO dto = PostDTO.getDTO(post, user);
             String assetId = dto.getAssets().get(0).getId(); // need optimiz
-            dto.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
+            dto.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
             return dto;
         }).toList();
         return postDTOs;
@@ -153,7 +197,7 @@ public class PostServiceImpl implements PostService {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO postDTO = PostDTO.getDTO(post, user);
             String assetId = postDTO.getAssets().get(0).getId(); // need optimiz
-            postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetId(assetId));
+            postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
             return postDTO;
         }).toList();
         return PageWrapper.<PostDTO>builder()
