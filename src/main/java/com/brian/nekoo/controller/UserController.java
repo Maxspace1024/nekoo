@@ -1,8 +1,10 @@
 package com.brian.nekoo.controller;
 
 import com.brian.nekoo.dto.MessageWrapper;
+import com.brian.nekoo.dto.UserDTO;
 import com.brian.nekoo.dto.req.SigninReqDTO;
 import com.brian.nekoo.dto.req.SignupReqDTO;
+import com.brian.nekoo.dto.req.UserProfileReqDTO;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.service.UserDetailService;
 import com.brian.nekoo.service.UserService;
@@ -13,9 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
@@ -75,9 +76,25 @@ public class UserController {
         }
     }
 
-    @GetMapping("/user/temp/{name}")
-    public ResponseEntity<?> test(HttpServletRequest request, @PathVariable String name) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        return ResponseEntity.ok(name);
+    @PostMapping(value = "/user/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        UserDTO userDTO = null;
+        if (user != null) {
+            dto.setUserId(user.getId());
+            userDTO = userService.updateUserProfile(dto);
+        }
+        return MessageWrapper.toResponseEntityOk(userDTO);
+    }
+
+    @GetMapping(value = "/user/profile/{userId}")
+    public ResponseEntity<?> getProfile(HttpServletRequest request, @PathVariable long userId) {
+        User user = userService.checkLoginValid(request);
+        User queryUser = userService.findUserById(userId);
+        UserDTO userDTO = null;
+        if (user != null && queryUser != null) {
+            userDTO = UserDTO.getDTO(queryUser);
+        }
+        return MessageWrapper.toResponseEntityOk(userDTO);
     }
 }

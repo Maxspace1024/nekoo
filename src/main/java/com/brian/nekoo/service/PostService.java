@@ -4,10 +4,13 @@ import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
+import com.brian.nekoo.entity.mysql.User;
 
 import java.util.List;
 
 public interface PostService {
+    PostDTO findPostById(String postId, User reqUser);
+
     PostDTO createPost(UploadPostReqDTO dto);
 
     PostDTO deletePost(UploadPostReqDTO dto);

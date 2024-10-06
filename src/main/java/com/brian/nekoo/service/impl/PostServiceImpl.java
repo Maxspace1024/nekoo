@@ -6,11 +6,15 @@ import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mongo.Asset;
 import com.brian.nekoo.entity.mongo.Post;
+import com.brian.nekoo.entity.mysql.Friendship;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.AssetTypeEnum;
+import com.brian.nekoo.enumx.FriendshipStateEnum;
+import com.brian.nekoo.enumx.PostPrivacyEnum;
 import com.brian.nekoo.repository.mongo.AssetRepository;
 import com.brian.nekoo.repository.mongo.DanmakuRepository;
 import com.brian.nekoo.repository.mongo.PostRepository;
+import com.brian.nekoo.repository.mysql.FriendshipRepository;
 import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.S3Service;
@@ -33,10 +37,46 @@ import java.util.Optional;
 public class PostServiceImpl implements PostService {
 
     private final S3Service s3Service;
+    private final FriendshipRepository friendshipRepository;
     private final DanmakuRepository danmakuRepository;
     private final PostRepository postRepository;
     private final UserRepository userRepository;
     private final AssetRepository assetRepository;
+
+    @Override
+    public PostDTO findPostById(String postId, User reqUser) {
+        Optional<Post> oPost = postRepository.findById(postId);
+        Friendship friendship = null;
+        PostDTO postDTO = null;
+        if (oPost.isPresent()) {
+            Post post = oPost.get();
+            List<Asset> assets = post.getAssets();
+            long totalCount = 0L;
+            if (!assets.isEmpty()) {
+                totalCount = danmakuRepository.countByAssetIdAndRemoveAtIsNull(assets.get(0).getId());
+            }
+            User ownUser = userRepository.findById(post.getUserId()).get();
+            long reqUserId = reqUser.getId();
+            long ownUserId = ownUser.getId();
+            if (reqUserId != ownUserId) {
+                friendship = friendshipRepository.findFriendship(reqUserId, ownUserId).orElse(null);
+                if (friendship != null) {
+                    if (!friendship.getState().equals(FriendshipStateEnum.APPROVED.ordinal()) && // mot friend
+                        post.getPrivacy().equals(PostPrivacyEnum.FRIEND.ordinal())) {    // privacy is friend
+                        return null;
+                    }
+                    postDTO = PostDTO.getDTO(post, ownUser);
+                    postDTO.setTotalDanmakuCount(totalCount);
+                    return postDTO;
+                }
+                return null;
+            }
+            postDTO = PostDTO.getDTO(post, ownUser);
+            postDTO.setTotalDanmakuCount(totalCount);
+            return postDTO;
+        }
+        return null;
+    }
 
     @Override
     public PostDTO createPost(UploadPostReqDTO dto) {
@@ -196,8 +236,13 @@ public class PostServiceImpl implements PostService {
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO postDTO = PostDTO.getDTO(post, user);
-            String assetId = postDTO.getAssets().get(0).getId(); // need optimiz
-            postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
+            List<Asset> assets = postDTO.getAssets();
+            if (!assets.isEmpty()) {
+                String assetId = assets.get(0).getId(); // need optimiz
+                postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
+            } else {
+                postDTO.setTotalDanmakuCount(0L);
+            }
             return postDTO;
         }).toList();
         return PageWrapper.<PostDTO>builder()

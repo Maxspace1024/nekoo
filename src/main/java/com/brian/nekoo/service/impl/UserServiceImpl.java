@@ -1,11 +1,16 @@
 package com.brian.nekoo.service.impl;
 
 import com.brian.nekoo.dto.MessageWrapper;
+import com.brian.nekoo.dto.UserDTO;
 import com.brian.nekoo.dto.req.SigninReqDTO;
 import com.brian.nekoo.dto.req.SignupReqDTO;
+import com.brian.nekoo.dto.req.UserProfileReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.AssetTypeEnum;
 import com.brian.nekoo.repository.mysql.UserRepository;
+import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.service.UserService;
+import com.brian.nekoo.util.FileUtil;
 import com.brian.nekoo.util.JwtUtil;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -17,6 +22,7 @@ import lombok.extern.log4j.Log4j2;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.time.Instant;
 import java.util.HashMap;
@@ -31,6 +37,7 @@ public class UserServiceImpl implements UserService {
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
+    private final S3Service s3Service;
 
     @Override
     public MessageWrapper<Object> signin(SigninReqDTO dto) {
@@ -158,5 +165,59 @@ public class UserServiceImpl implements UserService {
     @Override
     public User findUserByEmail(String email) {
         return userRepository.findUserByEmailAndRemoveAtIsNull(email).orElse(null);
+    }
+
+    @Override
+    public User findUserById(Long userId) {
+        return userRepository.findById(userId).orElse(null);
+    }
+
+    @Override
+    public UserDTO updateUserProfile(UserProfileReqDTO dto) {
+        Optional<User> oUser = userRepository.findById(dto.getUserId());
+        if (oUser.isPresent()) {
+            User user = oUser.get();
+
+            String userName = dto.getUserName();
+            if (userName != null) {
+                user.setName(userName);
+            }
+            Instant birthday = dto.getBirthday();
+            if (birthday != null) {
+                user.setBirthday(birthday);
+            }
+            String gender = dto.getGender();
+            if (gender != null) {
+                user.setGender(gender);
+            }
+            String location = dto.getLocation();
+            if (location != null) {
+                user.setLocation(location);
+            }
+            String content = dto.getContent();
+            if (content != null) {
+                user.setContent(content);
+            }
+
+            MultipartFile file = dto.getImage();
+            if (file != null) {
+                String uuidFilename;
+                String fileExtension;
+                try {
+                    uuidFilename = FileUtil.generateUuidFileName(file.getOriginalFilename());
+                    fileExtension = FileUtil.extractFileExtension(uuidFilename);
+                    int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
+
+                    s3Service.uploadFile(file, uuidFilename);
+                } catch (Exception e) {
+                    return null;
+                }
+                user.setAvatarPath(uuidFilename);
+            }
+
+            user = userRepository.save(user);
+            return UserDTO.getDTO(user);
+        }
+        return null;
     }
 }

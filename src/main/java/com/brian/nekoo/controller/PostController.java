@@ -6,6 +6,7 @@ import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.service.FriendshipService;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,19 +15,27 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/api/v1")
 @RequiredArgsConstructor
 public class PostController {
 
+    private final FriendshipService friendshipService;
     private final PostService postService;
     private final UserService userService;
     private final SimpMessagingTemplate messagingTemplate;
+
+    @GetMapping(value = "/post/{postId}")
+    public ResponseEntity<Object> getPost(HttpServletRequest request, @PathVariable String postId) {
+        User user = userService.checkLoginValid(request);
+        PostDTO postDTO = null;
+        if (user != null) {
+            postDTO = postService.findPostById(postId, user);
+        }
+        return MessageWrapper.toResponseEntityOk(postDTO);
+    }
 
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {

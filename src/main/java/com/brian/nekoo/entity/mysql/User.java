@@ -35,6 +35,18 @@ public class User {
     @Column(name = "web_token")
     private String webToken;
 
+    @Column(name = "location")
+    private String location;
+
+    @Column(name = "gender")
+    private String gender;
+
+    @Column(name = "content")
+    private String content;
+
+    @Column(name = "birthday")
+    private Instant birthday;
+
     @OneToMany(mappedBy = "user")
     private Set<ChatroomUser> chatroomUsers;
 

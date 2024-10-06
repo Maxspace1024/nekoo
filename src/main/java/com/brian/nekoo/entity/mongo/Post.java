@@ -24,7 +24,7 @@ public class Post {
     private long userId;
 
     // 貼文隱私
-    private int privacy;
+    private Integer privacy;
 
     // 貼文內文
     private String content;
