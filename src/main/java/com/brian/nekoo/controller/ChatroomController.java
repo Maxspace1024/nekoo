@@ -6,7 +6,10 @@ import com.brian.nekoo.dto.MessageWrapper;
 import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.req.ChatLogReqDTO;
 import com.brian.nekoo.dto.req.ChatroomReqDTO;
+import com.brian.nekoo.entity.mysql.Chatroom;
+import com.brian.nekoo.entity.mysql.ChatroomUser;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.ReadStateEnum;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
@@ -52,11 +55,26 @@ public class ChatroomController {
         if (user != null) {
             long userId = user.getId();
             dto.setUserId(userId);
-            chatLogDTO = chatService.createChatLog(dto);
-            if (chatLogDTO != null)
+            chatLogDTO = chatService.createChatLog(dto);                                                // 留下對話紀錄
+            Chatroom chatroom = chatService.updateModifyAtByChatroomId(chatLogDTO.getChatroomId());     // 更新聊天室修改時間
+            List<ChatroomUser> chatroomUsers = chatService.updateReadState(userId, chatroom.getId(), ReadStateEnum.UNREAD.ordinal()); // 設定未讀
+            if (chatLogDTO != null && chatroom != null)
                 messagingTemplate.convertAndSend("/topic/chatroom/" + dto.getChatroomUuid(), chatLogDTO);
         }
         return MessageWrapper.toResponseEntityOk(chatLogDTO);
+    }
+
+    @PostMapping(value = "/chat/seen")
+    public ResponseEntity<Object> chatSeen(HttpServletRequest request, @RequestBody ChatLogReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        ChatroomDTO chatroomDTO = null;
+        if (user != null) {
+            long userId = user.getId();
+            dto.setUserId(userId);
+            Chatroom chatroom = chatService.updateModifyAtByChatroomId(dto.getChatroomId());     // 更新聊天室修改時間
+            ChatroomUser chatroomUser = chatService.updateSelfReadState(userId, chatroom.getId(), ReadStateEnum.SEEN.ordinal()); // 設定已讀
+        }
+        return MessageWrapper.toResponseEntityOk(chatroomDTO);
     }
 
     @PostMapping(value = "/chat/log")

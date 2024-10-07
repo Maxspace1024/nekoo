@@ -225,7 +225,8 @@ public class ChatServiceImpl implements ChatService {
 
                 ChatroomDTO.ChatroomDTOBuilder builder = ChatroomDTO.builder()
                     .chatroomId(chatroom.getId())
-                    .chatroomUuid(chatroom.getUuid());
+                    .chatroomUuid(chatroom.getUuid())
+                    .readState(chatroomUser.getReadState());
                 if (partnerUser != null) {
                     builder.chatroomName(partnerUser.getName())
                         .chatroomAvatarPath(partnerUser.getAvatarPath());
@@ -234,10 +235,13 @@ public class ChatServiceImpl implements ChatService {
                     User lastUser = userRepository.findById(lastChatLog.getUserId()).get();
                     builder.lastContent(lastChatLog.getContent())
                         .lastCreateAt(lastChatLog.getCreateAt())
+                        .lastUserId(lastChatLog.getUserId())
                         .lastUserName(lastUser.getName());
                 }
                 return builder.build();
-            }).toList();
+            })
+            .sorted(Comparator.comparing(ChatroomDTO::getLastCreateAt, Comparator.nullsLast(Comparator.reverseOrder())))
+            .toList();
         return PageWrapper.<ChatroomDTO>builder()
             .page(chatroomDTOs)
             .totalPages(chatroomUsers.getTotalPages())
@@ -257,6 +261,7 @@ public class ChatServiceImpl implements ChatService {
                 .chatroomAvatarPath(chatroom.getAvatarPath());
             if (lastChatLog != null) {
                 builder.lastContent(lastChatLog.getContent())
+                    .lastUserId(lastChatLog.getUserId())
                     .lastCreateAt(lastChatLog.getCreateAt());
             }
             return builder.build();
@@ -279,6 +284,7 @@ public class ChatServiceImpl implements ChatService {
                 .chatroomAvatarPath(chatroom.getAvatarPath());
             if (lastChatLog != null) {
                 builder.lastContent(lastChatLog.getContent())
+                    .lastUserId(lastChatLog.getUserId())
                     .lastCreateAt(lastChatLog.getCreateAt());
             }
             return builder.build();
@@ -289,5 +295,40 @@ public class ChatServiceImpl implements ChatService {
     @Override
     public Chatroom findChatroomByChatroomId(long chatroomId) {
         return chatroomRepository.findById(chatroomId).get();
+    }
+
+    @Override
+    public Chatroom updateModifyAtByChatroomId(long chatroomId) {
+        Chatroom chatroom = chatroomRepository.findById(chatroomId).orElse(null);
+        if (chatroom != null) {
+            Instant now = Instant.now();
+            chatroom.setModifyAt(now);
+            chatroom = chatroomRepository.save(chatroom);
+            return chatroom;
+        }
+        return null;
+    }
+
+    @Override
+    public List<ChatroomUser> updateReadState(long senderUserId, long chatroomId, int readState) {
+        List<ChatroomUser> chatroomUsers = chatroomUserRepository.findByUserIdNotAndChatroomId(senderUserId, chatroomId);
+        chatroomUsers = chatroomUsers.stream()
+            .map(cu -> {
+                cu.setReadState(readState);
+                return cu;
+            }).toList();
+        chatroomUsers = chatroomUserRepository.saveAll(chatroomUsers);
+        return chatroomUsers;
+    }
+
+    @Override
+    public ChatroomUser updateSelfReadState(long userId, long chatroomId, int readState) {
+        Optional<ChatroomUser> oChatroomUser = chatroomUserRepository.findByUserIdAndChatroomId(userId, chatroomId);
+        if (oChatroomUser.isPresent()) {
+            ChatroomUser chatroomUser = oChatroomUser.get();
+            chatroomUser.setReadState(readState);
+            return chatroomUserRepository.save(chatroomUser);
+        }
+        return null;
     }
 }

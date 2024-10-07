@@ -6,6 +6,7 @@ import com.brian.nekoo.dto.PageWrapper;
 import com.brian.nekoo.dto.req.ChatLogReqDTO;
 import com.brian.nekoo.dto.req.ChatroomReqDTO;
 import com.brian.nekoo.entity.mysql.Chatroom;
+import com.brian.nekoo.entity.mysql.ChatroomUser;
 
 import java.util.List;
 
@@ -27,4 +28,10 @@ public interface ChatService {
     ChatroomDTO findChatroomByUserIdAndChatroomId(long userId, long chatroomId);
 
     Chatroom findChatroomByChatroomId(long chatroomId);
+
+    Chatroom updateModifyAtByChatroomId(long chatroomId);
+
+    List<ChatroomUser> updateReadState(long senderUserId, long chatroomId, int readState);
+
+    ChatroomUser updateSelfReadState(long userId, long chatroomId, int readState);
 }

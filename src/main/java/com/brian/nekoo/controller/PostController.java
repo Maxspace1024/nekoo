@@ -76,7 +76,17 @@ public class PostController {
         User user = userService.checkLoginValid(request);
         PageWrapper<PostDTO> postDTOs = null;
         if (user != null) {
-            postDTOs = postService.findPostByPage(dto);
+            postDTOs = postService.findAllPublicPostByPage(dto);
+        }
+        return MessageWrapper.toResponseEntityOk(postDTOs);
+    }
+
+    @PostMapping(value = "/profilePostPage/{profileUserId}")
+    public ResponseEntity<Object> profilePostPage(HttpServletRequest request, @RequestBody PostReqDTO dto, @PathVariable long profileUserId) {
+        User user = userService.checkLoginValid(request);
+        PageWrapper<PostDTO> postDTOs = null;
+        if (user != null) {
+            postDTOs = postService.findPostByPageWithUser(dto, user.getId(), profileUserId);
         }
         return MessageWrapper.toResponseEntityOk(postDTOs);
     }

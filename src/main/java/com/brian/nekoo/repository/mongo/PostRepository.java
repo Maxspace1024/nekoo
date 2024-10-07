@@ -12,6 +12,8 @@ import java.util.List;
 public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findAllByRemoveAtIsNullOrderByCreateAtDesc(Pageable pageable);
 
+    Page<Post> findByRemoveAtIsNullAndPrivacyInOrderByCreateAtDesc(Pageable pageable, List<Integer> privacy);
+
     List<Post> findPostByUserId(long userId);
 
     Page<Post> findAll(Pageable pageable);

@@ -19,5 +19,7 @@ public interface PostService {
 
     List<PostDTO> findPost();
 
-    PageWrapper<PostDTO> findPostByPage(PostReqDTO dto);
+    PageWrapper<PostDTO> findAllPublicPostByPage(PostReqDTO dto);
+
+    PageWrapper<PostDTO> findPostByPageWithUser(PostReqDTO dto, long reqUser, long profileUserid);
 }

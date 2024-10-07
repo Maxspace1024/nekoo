@@ -230,9 +230,65 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
-    public PageWrapper<PostDTO> findPostByPage(PostReqDTO dto) {
+    public PageWrapper<PostDTO> findAllPublicPostByPage(PostReqDTO dto) {
+        // public post only
         Pageable pageable = PageRequest.of(dto.getPage(), 4);
-        Page<Post> posts = postRepository.findAllByRemoveAtIsNullOrderByCreateAtDesc(pageable);
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndPrivacyInOrderByCreateAtDesc(
+            pageable,
+            List.of(PostPrivacyEnum.PUBLIC.ordinal())
+        );
+        List<PostDTO> postDTOs = posts.stream().map(post -> {
+            User user = userRepository.findById(post.getUserId()).get();
+            PostDTO postDTO = PostDTO.getDTO(post, user);
+            List<Asset> assets = postDTO.getAssets();
+            if (!assets.isEmpty()) {
+                String assetId = assets.get(0).getId(); // need optimiz
+                postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
+            } else {
+                postDTO.setTotalDanmakuCount(0L);
+            }
+            return postDTO;
+        }).toList();
+        return PageWrapper.<PostDTO>builder()
+            .page(postDTOs)
+            .totalPages(posts.getTotalPages())
+            .build();
+    }
+
+    @Override
+    public PageWrapper<PostDTO> findPostByPageWithUser(PostReqDTO dto, long reqUserId, long profileUserId) {
+        // check friendship permission
+        List<Integer> privacyList = new ArrayList<>();
+        if (reqUserId == profileUserId) {
+            privacyList = List.of(
+                PostPrivacyEnum.PUBLIC.ordinal(),
+                PostPrivacyEnum.FRIEND.ordinal()
+            );
+        } else {
+            Optional<Friendship> oFriendship = friendshipRepository.findFriendship(reqUserId, profileUserId);
+            if (oFriendship.isPresent()) {
+                Friendship friendship = oFriendship.get();
+                if (friendship.getState().equals(FriendshipStateEnum.APPROVED.ordinal())) {
+                    // 是朋友
+                    privacyList = List.of(
+                        PostPrivacyEnum.PUBLIC.ordinal(),
+                        PostPrivacyEnum.FRIEND.ordinal()
+                    );
+                } else {
+                    // 不是朋友
+                    privacyList = List.of(PostPrivacyEnum.PUBLIC.ordinal());
+                }
+            } else {
+                // 不是朋友
+                privacyList = List.of(PostPrivacyEnum.PUBLIC.ordinal());
+            }
+        }
+
+        Pageable pageable = PageRequest.of(dto.getPage(), 4);
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndPrivacyInOrderByCreateAtDesc(
+            pageable,
+            privacyList
+        );
         List<PostDTO> postDTOs = posts.stream().map(post -> {
             User user = userRepository.findById(post.getUserId()).get();
             PostDTO postDTO = PostDTO.getDTO(post, user);
