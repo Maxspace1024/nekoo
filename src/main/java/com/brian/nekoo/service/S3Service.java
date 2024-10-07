@@ -20,6 +20,8 @@ public class S3Service {
     @Value("${s3.bucket.name}")
     private String bucketName;
 
+    private static final String PATH = "assets/";
+
     public S3Service(S3Client s3Client) {
         this.s3Client = s3Client;
     }
@@ -30,7 +32,7 @@ public class S3Service {
 
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
             .bucket(bucketName)
-            .key(uuidFileName)
+            .key(PATH + uuidFileName)
             .metadata(metadata)
             .contentType(file.getContentType())
             .build();
@@ -42,7 +44,7 @@ public class S3Service {
     public String deleteFile(String uuidFileName) throws IOException {
         DeleteObjectRequest deleteObjectRequest = DeleteObjectRequest.builder()
             .bucket(bucketName)
-            .key(uuidFileName)
+            .key(PATH + uuidFileName)
             .build();
 
         s3Client.deleteObject(deleteObjectRequest);
@@ -50,7 +52,7 @@ public class S3Service {
     }
 
     public String getFileUrl(String fileName) {
-        URL url = s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(fileName));
+        URL url = s3Client.utilities().getUrl(builder -> builder.bucket(bucketName).key(PATH + fileName));
         return url.toString();
     }
 }
