@@ -14,6 +14,8 @@ public interface PostRepository extends MongoRepository<Post, String> {
 
     Page<Post> findByRemoveAtIsNullAndPrivacyInOrderByCreateAtDesc(Pageable pageable, List<Integer> privacy);
 
+    Page<Post> findByRemoveAtIsNullAndUserIdAndPrivacyInOrderByCreateAtDesc(Pageable pageable, long userId, List<Integer> privacy);
+
     List<Post> findPostByUserId(long userId);
 
     Page<Post> findAll(Pageable pageable);

@@ -285,8 +285,9 @@ public class PostServiceImpl implements PostService {
         }
 
         Pageable pageable = PageRequest.of(dto.getPage(), 4);
-        Page<Post> posts = postRepository.findByRemoveAtIsNullAndPrivacyInOrderByCreateAtDesc(
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndUserIdAndPrivacyInOrderByCreateAtDesc(
             pageable,
+            profileUserId,
             privacyList
         );
         List<PostDTO> postDTOs = posts.stream().map(post -> {
