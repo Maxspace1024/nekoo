@@ -55,25 +55,20 @@ public class PostServiceImpl implements PostService {
             if (!assets.isEmpty()) {
                 totalCount = danmakuRepository.countByAssetIdAndRemoveAtIsNull(assets.get(0).getId());
             }
+
             User ownUser = userRepository.findById(post.getUserId()).get();
             long reqUserId = reqUser.getId();
             long ownUserId = ownUser.getId();
-            if (reqUserId != ownUserId) {
-                friendship = friendshipRepository.findFriendship(reqUserId, ownUserId).orElse(null);
-                if (friendship != null) {
-                    if (!friendship.getState().equals(FriendshipStateEnum.APPROVED.ordinal()) && // mot friend
-                        post.getPrivacy().equals(PostPrivacyEnum.FRIEND.ordinal())) {    // privacy is friend
-                        return null;
-                    }
-                    postDTO = PostDTO.getDTO(post, ownUser);
-                    postDTO.setTotalDanmakuCount(totalCount);
-                    return postDTO;
-                }
+            friendship = friendshipRepository.findFriendship(reqUserId, ownUserId).orElse(null);
+            boolean isFriend = (reqUserId == ownUserId) || (friendship != null && friendship.getState().equals(FriendshipStateEnum.APPROVED.ordinal()));
+
+            if (isFriend || post.getPrivacy().equals(PostPrivacyEnum.PUBLIC.ordinal())) {
+                postDTO = PostDTO.getDTO(post, ownUser);
+                postDTO.setTotalDanmakuCount(totalCount);
+                return postDTO;
+            } else {
                 return null;
             }
-            postDTO = PostDTO.getDTO(post, ownUser);
-            postDTO.setTotalDanmakuCount(totalCount);
-            return postDTO;
         }
         return null;
     }
