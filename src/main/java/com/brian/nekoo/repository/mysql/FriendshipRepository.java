@@ -28,7 +28,7 @@ public interface FriendshipRepository extends JpaRepository<Friendship, Long> {
             (SELECT * FROM users WHERE id <> :userId) uu JOIN
             (SELECT * FROM friendships f WHERE f.user_receiver_id = :userId OR f.user_sender_id = :userId) ff
             ON (uu.id = ff.user_receiver_id OR uu.id = ff.user_sender_id)
-            WHERE uu.name LIKE CONCAT('%', :searchName, '%');
+            WHERE uu.name LIKE CONCAT('%', :searchName, '%') || SUBSTRING_INDEX(uu.email, '@', 1) LIKE CONCAT('%', :searchName, '%');
         """, nativeQuery = true)
     List<Friendship> findFriendshipsWithName(@Param("userId") long userId, @Param("searchName") String searchName);
 

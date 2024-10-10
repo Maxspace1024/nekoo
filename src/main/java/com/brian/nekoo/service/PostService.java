@@ -19,6 +19,12 @@ public interface PostService {
 
     List<PostDTO> findPost();
 
+    // 透過分頁跟關鍵字搜尋
+    PageWrapper<PostDTO> searchPublicPostByContentAndPage(PostReqDTO dto);
+
+    PageWrapper<PostDTO> searchPublicPostByTagAndPage(PostReqDTO dto);
+
+    // 找所有公開的貼文
     PageWrapper<PostDTO> findAllPublicPostByPage(PostReqDTO dto);
 
     // 找那些屬於profileUser的文章，並檢查與reqUser的關係(決定是否要找出非公開貼文)

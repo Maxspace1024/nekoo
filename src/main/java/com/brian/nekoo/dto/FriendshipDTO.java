@@ -19,10 +19,12 @@ public class FriendshipDTO {
     // sender user
     private Long senderUserId;
     private String senderUserName;
+    private String senderUserEmail;
     private String senderUserAvatarPath;
     // receiver user
     private long receiverUserId;
     private String receiverUserName;
+    private String receiverUserEmail;
     private String receiverUserAvatarPath;
     // state
     private int friendshipState;
@@ -39,9 +41,11 @@ public class FriendshipDTO {
             .friendshipId(friendship.getId())
             .senderUserId(friendship.getSenderUser().getId())
             .senderUserName(friendship.getSenderUser().getName())
+            .senderUserEmail(friendship.getSenderUser().getEmail())
             .senderUserAvatarPath(friendship.getSenderUser().getAvatarPath())
             .receiverUserId(friendship.getReceiverUser().getId())
             .receiverUserName(friendship.getReceiverUser().getName())
+            .receiverUserEmail(friendship.getReceiverUser().getEmail())
             .receiverUserAvatarPath(friendship.getReceiverUser().getAvatarPath())
             .friendshipState(friendship.getState())
             .createAt(friendship.getCreateAt())
@@ -53,6 +57,7 @@ public class FriendshipDTO {
         return FriendshipDTO.builder()
             .receiverUserId(receiverUser.getId())
             .receiverUserName(receiverUser.getName())
+            .receiverUserEmail(receiverUser.getEmail())
             .receiverUserAvatarPath(receiverUser.getAvatarPath())
             .friendshipState(FriendshipStateEnum.NONE.ordinal())
             .build();

@@ -162,12 +162,7 @@ public class FriendshipServcieImpl implements FriendshipService {
     public List<FriendshipDTO> findNoFriendshipsWithName(long currUserId, String searchName) {
         List<User> users = userRepository.findNoFriendshipsWithName(currUserId, searchName);
         return users.stream().map(
-            user -> FriendshipDTO.builder()
-                .receiverUserId(user.getId())
-                .receiverUserName(user.getName())
-                .receiverUserAvatarPath(user.getAvatarPath())
-                .friendshipState(FriendshipStateEnum.NONE.ordinal())
-                .build()
+            FriendshipDTO::getNoneStateDTO
         ).toList();
     }
 

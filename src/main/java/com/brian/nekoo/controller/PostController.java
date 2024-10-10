@@ -81,6 +81,26 @@ public class PostController {
         return MessageWrapper.toResponseEntityOk(postDTOs);
     }
 
+    @PostMapping(value = "/post/searchContent")
+    public ResponseEntity<Object> searchPostContent(HttpServletRequest request, @RequestBody PostReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        PageWrapper<PostDTO> postDTOs = null;
+        if (user != null) {
+            postDTOs = postService.searchPublicPostByContentAndPage(dto);
+        }
+        return MessageWrapper.toResponseEntityOk(postDTOs);
+    }
+
+    @PostMapping(value = "/post/searchTag")
+    public ResponseEntity<Object> searchPostTag(HttpServletRequest request, @RequestBody PostReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        PageWrapper<PostDTO> postDTOs = null;
+        if (user != null) {
+            postDTOs = postService.searchPublicPostByTagAndPage(dto);
+        }
+        return MessageWrapper.toResponseEntityOk(postDTOs);
+    }
+
     @PostMapping(value = "/profilePostPage/{profileUserId}")
     public ResponseEntity<Object> profilePostPage(HttpServletRequest request, @RequestBody PostReqDTO dto, @PathVariable long profileUserId) {
         User user = userService.checkLoginValid(request);

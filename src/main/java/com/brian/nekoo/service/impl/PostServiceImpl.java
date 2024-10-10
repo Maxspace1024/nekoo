@@ -225,6 +225,58 @@ public class PostServiceImpl implements PostService {
     }
 
     @Override
+    public PageWrapper<PostDTO> searchPublicPostByContentAndPage(PostReqDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), 4);
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndContentContainingAndCreateAtBeforeOrderByCreateAtDesc(
+            pageable,
+            dto.getQuery(),
+            dto.getQueryAt()
+        );
+        List<PostDTO> postDTOs = posts.stream().map(post -> {
+            User user = userRepository.findById(post.getUserId()).get();
+            PostDTO postDTO = PostDTO.getDTO(post, user);
+            List<Asset> assets = postDTO.getAssets();
+            if (!assets.isEmpty()) {
+                String assetId = assets.get(0).getId(); // need optimiz
+                postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
+            } else {
+                postDTO.setTotalDanmakuCount(0L);
+            }
+            return postDTO;
+        }).toList();
+        return PageWrapper.<PostDTO>builder()
+            .page(postDTOs)
+            .totalPages(posts.getTotalPages())
+            .build();
+    }
+
+    @Override
+    public PageWrapper<PostDTO> searchPublicPostByTagAndPage(PostReqDTO dto) {
+        Pageable pageable = PageRequest.of(dto.getPage(), 4);
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndHashtagsInAndCreateAtBeforeOrderByCreateAtDesc(
+            pageable,
+            dto.getQuery(),
+            dto.getQueryAt()
+        );
+        List<PostDTO> postDTOs = posts.stream().map(post -> {
+            User user = userRepository.findById(post.getUserId()).get();
+            PostDTO postDTO = PostDTO.getDTO(post, user);
+            List<Asset> assets = postDTO.getAssets();
+            if (!assets.isEmpty()) {
+                String assetId = assets.get(0).getId(); // need optimiz
+                postDTO.setTotalDanmakuCount(danmakuRepository.countByAssetIdAndRemoveAtIsNull(assetId));
+            } else {
+                postDTO.setTotalDanmakuCount(0L);
+            }
+            return postDTO;
+        }).toList();
+        return PageWrapper.<PostDTO>builder()
+            .page(postDTOs)
+            .totalPages(posts.getTotalPages())
+            .build();
+    }
+
+    @Override
     public PageWrapper<PostDTO> findAllPublicPostByPage(PostReqDTO dto) {
         // public post only
         Pageable pageable = PageRequest.of(dto.getPage(), 4);

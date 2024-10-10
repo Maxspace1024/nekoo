@@ -112,6 +112,26 @@ public class FriendshipController {
         return MessageWrapper.toResponseEntityOk(friendshipDTOs);
     }
 
+    @PostMapping("/friendship/searchMyFriends")
+    public ResponseEntity<Object> searchMyFriends(HttpServletRequest request, @RequestBody FriendshipReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        List<FriendshipDTO> friendshipDTOs = new ArrayList<>();
+        if (user != null) {
+            friendshipDTOs = friendshipService.findFriendshipsWithName(user.getId(), dto.getSearchName());
+        }
+        return MessageWrapper.toResponseEntityOk(friendshipDTOs);
+    }
+
+    @PostMapping("/friendship/searchNotMyFriends")
+    public ResponseEntity<Object> searchNotMyFriends(HttpServletRequest request, @RequestBody FriendshipReqDTO dto) {
+        User user = userService.checkLoginValid(request);
+        List<FriendshipDTO> friendshipDTOs = new ArrayList<>();
+        if (user != null) {
+            friendshipDTOs = friendshipService.findNoFriendshipsWithName(user.getId(), dto.getSearchName());
+        }
+        return MessageWrapper.toResponseEntityOk(friendshipDTOs);
+    }
+
     @PostMapping("/friendship/searchNotification")
     public ResponseEntity<Object> searchFriendshipsNotification(HttpServletRequest request, @RequestBody FriendshipReqDTO dto) {
         User user = userService.checkLoginValid(request);

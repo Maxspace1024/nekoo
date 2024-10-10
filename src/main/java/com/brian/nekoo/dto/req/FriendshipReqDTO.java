@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.Instant;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
@@ -14,5 +16,7 @@ public class FriendshipReqDTO {
     private Long senderUserId;
     private Long receiverUserId;
     private String searchName;
+    private Integer page;
     private Integer state;
+    private Instant queryAt;
 }
