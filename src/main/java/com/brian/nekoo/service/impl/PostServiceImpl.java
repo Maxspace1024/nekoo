@@ -227,9 +227,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public PageWrapper<PostDTO> searchPublicPostByContentAndPage(PostReqDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), 4);
-        Page<Post> posts = postRepository.findByRemoveAtIsNullAndContentContainingAndCreateAtBeforeOrderByCreateAtDesc(
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndContentContainingAndPrivacyAndCreateAtBeforeOrderByCreateAtDesc(
             pageable,
             dto.getQuery(),
+            PostPrivacyEnum.PUBLIC.ordinal(),
             dto.getQueryAt()
         );
         List<PostDTO> postDTOs = posts.stream().map(post -> {
@@ -253,9 +254,10 @@ public class PostServiceImpl implements PostService {
     @Override
     public PageWrapper<PostDTO> searchPublicPostByTagAndPage(PostReqDTO dto) {
         Pageable pageable = PageRequest.of(dto.getPage(), 4);
-        Page<Post> posts = postRepository.findByRemoveAtIsNullAndHashtagsInAndCreateAtBeforeOrderByCreateAtDesc(
+        Page<Post> posts = postRepository.findByRemoveAtIsNullAndHashtagsInAndPrivacyAndCreateAtBeforeOrderByCreateAtDesc(
             pageable,
             dto.getQuery(),
+            PostPrivacyEnum.PUBLIC.ordinal(),
             dto.getQueryAt()
         );
         List<PostDTO> postDTOs = posts.stream().map(post -> {

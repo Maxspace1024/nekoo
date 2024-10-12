@@ -18,10 +18,10 @@ public interface PostRepository extends MongoRepository<Post, String> {
     Page<Post> findByRemoveAtIsNullAndUserIdAndPrivacyInOrderByCreateAtDesc(Pageable pageable, long userId, List<Integer> privacy);
 
     // 匹配content內容、在查詢時間之前
-    Page<Post> findByRemoveAtIsNullAndContentContainingAndCreateAtBeforeOrderByCreateAtDesc(Pageable pageable, String content, Instant createAt);
+    Page<Post> findByRemoveAtIsNullAndContentContainingAndPrivacyAndCreateAtBeforeOrderByCreateAtDesc(Pageable pageable, String content, Integer privacy, Instant createAt);
 
     // 匹配hashtag
-    Page<Post> findByRemoveAtIsNullAndHashtagsInAndCreateAtBeforeOrderByCreateAtDesc(Pageable pageable, String hashtags, Instant createAt);
+    Page<Post> findByRemoveAtIsNullAndHashtagsInAndPrivacyAndCreateAtBeforeOrderByCreateAtDesc(Pageable pageable, String hashtags, Integer privacy, Instant createAt);
 
     List<Post> findPostByUserId(long userId);
 
