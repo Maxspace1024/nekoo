@@ -16,6 +16,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 @Controller
 @RequestMapping("/api/v1")
@@ -37,16 +38,35 @@ public class PostController {
         return MessageWrapper.toResponseEntityOk(postDTO);
     }
 
+//    @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
+//        User user = userService.checkLoginValid(request);
+//        PostDTO postDTO = null;
+//        if (user != null) {
+//            dto.setUserId(user.getId());
+//            postDTO = postService.createPost(dto);
+//            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/new", postDTO);
+//        }
+//        return MessageWrapper.toResponseEntityOk(postDTO);
+//    }
+
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
-        User user = userService.checkLoginValid(request);
-        PostDTO postDTO = null;
-        if (user != null) {
-            dto.setUserId(user.getId());
-            postDTO = postService.createPost(dto);
-            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/new", postDTO);
-        }
-        return MessageWrapper.toResponseEntityOk(postDTO);
+    public Mono<ResponseEntity<Object>> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
+        return Mono.fromCallable(() -> userService.checkLoginValid(request))
+            .flatMap(user -> {
+                if (user != null) {
+                    dto.setUserId(user.getId());
+                    return Mono.fromCallable(() -> postService.createPost(dto))
+                        .doOnNext(postDTO -> {
+                            if (postDTO != null) {
+                                messagingTemplate.convertAndSend("/topic/post/new", postDTO);
+                            }
+                        })
+                        .map(MessageWrapper::toResponseEntityOk);
+                } else {
+                    return Mono.just(MessageWrapper.toResponseEntityOk(null));
+                }
+            });
     }
 
     @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
@@ -54,6 +74,7 @@ public class PostController {
         User user = userService.checkLoginValid(request);
         PostDTO postDTO = null;
         if (user != null) {
+            dto.setUserId(user.getId());
             postDTO = postService.updatePost(dto);
             if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/update", postDTO);
         }

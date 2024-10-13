@@ -86,7 +86,8 @@ public class PostServiceImpl implements PostService {
                     int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
 
                     uuidFilenames.add(uuidFilename);
-                    s3Service.uploadFile(file, uuidFilename);
+//                    s3Service.uploadFile(file, uuidFilename);
+                    s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
                     Asset asset = Asset.builder()
                         .path(uuidFilename)
                         .type(assetType)
@@ -158,7 +159,8 @@ public class PostServiceImpl implements PostService {
                         int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
 
                         uuidFilenames.add(uuidFilename);
-                        s3Service.uploadFile(file, uuidFilename);
+//                        s3Service.uploadFile(file, uuidFilename);
+                        s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
                         Asset asset = Asset.builder()
                             .path(uuidFilename)
                             .type(assetType)

@@ -28,8 +28,6 @@ public class SecurityConfig {
             .csrf((csrf) -> csrf.disable())
             .authorizeHttpRequests((request) -> {
                     request
-                        .requestMatchers("/room/chatApple.html").authenticated()
-                        .requestMatchers("/api/v1/user/temp/**").authenticated()
                         .anyRequest().permitAll();
                 }
             )

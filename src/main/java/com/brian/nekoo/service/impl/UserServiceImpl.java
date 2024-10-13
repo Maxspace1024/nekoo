@@ -208,7 +208,8 @@ public class UserServiceImpl implements UserService {
                     fileExtension = FileUtil.extractFileExtension(uuidFilename);
                     int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
 
-                    s3Service.uploadFile(file, uuidFilename);
+//                    s3Service.uploadFile(file, uuidFilename);
+                    s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
                 } catch (Exception e) {
                     return null;
                 }
