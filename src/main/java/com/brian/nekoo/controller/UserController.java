@@ -19,6 +19,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -76,15 +77,29 @@ public class UserController {
         }
     }
 
+//    @PostMapping(value = "/user/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<?> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
+//        User user = userService.checkLoginValid(request);
+//        UserDTO userDTO = null;
+//        if (user != null) {
+//            dto.setUserId(user.getId());
+//            userDTO = userService.updateUserProfile(dto);
+//        }
+//        return MessageWrapper.toResponseEntityOk(userDTO);
+//    }
+
     @PostMapping(value = "/user/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<?> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
-        User user = userService.checkLoginValid(request);
-        UserDTO userDTO = null;
-        if (user != null) {
-            dto.setUserId(user.getId());
-            userDTO = userService.updateUserProfile(dto);
-        }
-        return MessageWrapper.toResponseEntityOk(userDTO);
+    public Mono<ResponseEntity<Object>> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
+        return Mono.fromCallable(() -> userService.checkLoginValid(request))
+            .flatMap(user -> {
+                if (user != null) {
+                    dto.setUserId(user.getId());
+                    return Mono.fromCallable(() -> userService.updateUserProfile(dto))
+                        .map(MessageWrapper::toResponseEntityOk);
+                } else {
+                    return Mono.just(MessageWrapper.toResponseEntityOk(null));
+                }
+            });
     }
 
     @GetMapping(value = "/user/profile/{userId}")

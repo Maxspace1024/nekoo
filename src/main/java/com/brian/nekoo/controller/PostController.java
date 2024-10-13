@@ -69,16 +69,35 @@ public class PostController {
             });
     }
 
+//    @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+//    public ResponseEntity<Object> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
+//        User user = userService.checkLoginValid(request);
+//        PostDTO postDTO = null;
+//        if (user != null) {
+//            dto.setUserId(user.getId());
+//            postDTO = postService.updatePost(dto);
+//            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/update", postDTO);
+//        }
+//        return MessageWrapper.toResponseEntityOk(postDTO);
+//    }
+
     @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public ResponseEntity<Object> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
-        User user = userService.checkLoginValid(request);
-        PostDTO postDTO = null;
-        if (user != null) {
-            dto.setUserId(user.getId());
-            postDTO = postService.updatePost(dto);
-            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/update", postDTO);
-        }
-        return MessageWrapper.toResponseEntityOk(postDTO);
+    public Mono<ResponseEntity<Object>> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
+        return Mono.fromCallable(() -> userService.checkLoginValid(request))
+            .flatMap(user -> {
+                if (user != null) {
+                    dto.setUserId(user.getId());
+                    return Mono.fromCallable(() -> postService.updatePost(dto))
+                        .doOnNext(postDTO -> {
+                            if (postDTO != null) {
+                                messagingTemplate.convertAndSend("/topic/post/update", postDTO);
+                            }
+                        })
+                        .map(MessageWrapper::toResponseEntityOk);
+                } else {
+                    return Mono.just(MessageWrapper.toResponseEntityOk(null));
+                }
+            });
     }
 
     @PostMapping("/post/delete")
