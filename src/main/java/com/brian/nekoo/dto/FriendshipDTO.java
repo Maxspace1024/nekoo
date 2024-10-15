@@ -54,6 +54,9 @@ public class FriendshipDTO {
     }
 
     public static FriendshipDTO getNoneStateDTO(User receiverUser) {
+        if (receiverUser == null) {
+            return null;
+        }
         return FriendshipDTO.builder()
             .receiverUserId(receiverUser.getId())
             .receiverUserName(receiverUser.getName())

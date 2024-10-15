@@ -38,7 +38,7 @@ public class FriendshipController {
         User user = userService.checkLoginValid(request);
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
-            friendshipDTO = friendshipService.findFriendship(dto.getSenderUserId(), dto.getReceiverUserId());
+            friendshipDTO = friendshipService.findFriendship(user.getId(), dto.getReceiverUserId());
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }

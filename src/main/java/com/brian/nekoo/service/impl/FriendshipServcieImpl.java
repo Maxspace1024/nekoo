@@ -32,7 +32,8 @@ public class FriendshipServcieImpl implements FriendshipService {
             Friendship friendship = oFriendship.get();
             return FriendshipDTO.getDTO(friendship);
         } else {
-            return null;
+            User recvUser = userRepository.findById(userId2).get();
+            return FriendshipDTO.getNoneStateDTO(recvUser);
         }
     }
 
