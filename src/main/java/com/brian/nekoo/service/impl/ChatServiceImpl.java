@@ -258,7 +258,7 @@ public class ChatServiceImpl implements ChatService {
                 .chatroomId(chatroom.getId())
                 .chatroomUuid(chatroom.getUuid())
                 .chatroomName(chatroomUser.getRoomName())
-                .chatroomAvatarPath(chatroom.getAvatarPath());
+                .chatroomAvatarPath(chatroomUser.getPartnerUser().getAvatarPath());
             if (lastChatLog != null) {
                 builder.lastContent(lastChatLog.getContent())
                     .lastUserId(lastChatLog.getUserId())
@@ -281,7 +281,7 @@ public class ChatServiceImpl implements ChatService {
                 .chatroomId(chatroom.getId())
                 .chatroomUuid(chatroom.getUuid())
                 .chatroomName(chatroomUser.getRoomName())
-                .chatroomAvatarPath(chatroom.getAvatarPath());
+                .chatroomAvatarPath(chatroomUser.getPartnerUser().getAvatarPath());
             if (lastChatLog != null) {
                 builder.lastContent(lastChatLog.getContent())
                     .lastUserId(lastChatLog.getUserId())
