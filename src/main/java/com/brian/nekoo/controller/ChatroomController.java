@@ -12,6 +12,7 @@ import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.ReadStateEnum;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.PostService;
+import com.brian.nekoo.service.RedisMessagePublisher;
 import com.brian.nekoo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -36,6 +37,7 @@ public class ChatroomController {
     private final UserService userService;
     private final ChatService chatService;
     private final SimpMessagingTemplate messagingTemplate;
+    private final RedisMessagePublisher publisher;
 
     @PostMapping("/chatroomPage")
     public ResponseEntity<Object> chatroomPage(HttpServletRequest request, @RequestBody ChatroomReqDTO dto) {
@@ -58,6 +60,7 @@ public class ChatroomController {
             chatLogDTO = chatService.createChatLog(dto);                                                // 留下對話紀錄
             Chatroom chatroom = chatService.updateModifyAtByChatroomId(chatLogDTO.getChatroomId());     // 更新聊天室修改時間
             List<ChatroomUser> chatroomUsers = chatService.updateReadState(userId, chatroom.getId(), ReadStateEnum.UNREAD.ordinal()); // 設定未讀
+            publisher.publish(dto);
             if (chatLogDTO != null && chatroom != null)
                 messagingTemplate.convertAndSend("/topic/chatroom/" + dto.getChatroomUuid(), chatLogDTO);
         }

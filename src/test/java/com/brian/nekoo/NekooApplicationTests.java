@@ -1,43 +1,84 @@
 package com.brian.nekoo;
 
-import com.brian.nekoo.repository.mongo.ChatLogRepository;
-import com.brian.nekoo.repository.mongo.DanmakuRepository;
-import com.brian.nekoo.repository.mongo.PostRepository;
-import com.brian.nekoo.repository.mysql.ChatroomRepository;
+import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.repository.mysql.UserRepository;
+import com.brian.nekoo.service.S3Service;
+import com.brian.nekoo.service.impl.UserServiceImpl;
 import com.brian.nekoo.util.JwtUtil;
 import lombok.extern.log4j.Log4j2;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.mockito.Mock;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
+
+import static org.mockito.Mockito.*;
 
 @SpringBootTest
 @Log4j2
 class NekooApplicationTests {
 
-    @Autowired
-    private ChatLogRepository chatLogRepository;
+//    @Autowired
+//    private ChatLogRepository chatLogRepository;
+//
+//    @Autowired
+//    private ChatroomRepository chatRoomRepository;
+//
+//    @Autowired
+//    private PostRepository postRepository;
+//
+//    @Autowired
+//    private DanmakuRepository danmakuRepository;
+//
+//    @Autowired
+//    private JwtUtil jwtUtil;
 
-    @Autowired
-    private ChatroomRepository chatRoomRepository;
-
-    @Autowired
-    private PostRepository postRepository;
-
-    @Autowired
-    private DanmakuRepository danmakuRepository;
-
-    @Autowired
+    @Mock
     private JwtUtil jwtUtil;
+
+    @Mock
+    private UserRepository userRepository;
+
+    @Mock
+    private PasswordEncoder passwordEncoder;
+
+    @Mock
+    private S3Service s3Service;
+
+    private UserServiceImpl userService;
+
+    @BeforeEach
+    public void setUp() {
+        userService = new UserServiceImpl(jwtUtil, userRepository, passwordEncoder, s3Service);
+    }
 
     @Test
     void test() {
-//        log.info(jwtUtil.generateToken("asdfasdf", new HashMap<>()));
-        log.info(jwtUtil.extractUsername("eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJhc2RmYXNkZiIsImlhdCI6MTcyNjgxNTgyMywiZXhwIjoxNzI2ODE5NDIzfQ.m3g0mBbkjZfsRXbih8cZWVcMLcUA5WBmysetry4IVXc"));
-//        SignatureException e
+        User stubUser = new User();
+        stubUser.setId(1L);
+        stubUser.setName("hi");
+        stubUser.setEmail("pypy@gmail.com");
+        when(userRepository.findUserByEmailAndRemoveAtIsNull("pypy@gmail.com")).thenReturn(Optional.of(stubUser));
+
+        userService.findUserByEmail("ypy@gmail.com");
+        verify(userRepository, times(1)).findUserByEmailAndRemoveAtIsNull("ypy@gmail.com");
+
     }
 
     @Test
     void contextLoads() {
+        User stubUser = new User();
+        stubUser.setId(1L);
+        stubUser.setName("hi");
+        when(userRepository.findById(1L)).thenReturn(Optional.of(stubUser));
+
+        userService.findUserById(1L);
+
+        // 驗證 UserRepository 的 findById(1L) 是否被正確調用一次
+        verify(userRepository, times(1)).findById(1L);
+
 //        Pageable pageable = PageRequest.of(0, 5, Sort.by("modify_at").descending());
 //        Page<ChatLog> page = chatLogRepository.findAllByChatId(333, pageable);
 //        List<ChatLog> chatLogs = page.getContent();
