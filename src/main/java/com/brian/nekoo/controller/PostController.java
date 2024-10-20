@@ -6,6 +6,7 @@ import com.brian.nekoo.dto.PostDTO;
 import com.brian.nekoo.dto.req.PostReqDTO;
 import com.brian.nekoo.dto.req.UploadPostReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.service.FriendshipService;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
@@ -38,18 +39,6 @@ public class PostController {
         return MessageWrapper.toResponseEntityOk(postDTO);
     }
 
-//    @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<Object> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
-//        User user = userService.checkLoginValid(request);
-//        PostDTO postDTO = null;
-//        if (user != null) {
-//            dto.setUserId(user.getId());
-//            postDTO = postService.createPost(dto);
-//            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/new", postDTO);
-//        }
-//        return MessageWrapper.toResponseEntityOk(postDTO);
-//    }
-
     @PostMapping(value = "/post", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<Object>> createPost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
         return Mono.fromCallable(() -> userService.checkLoginValid(request))
@@ -59,7 +48,7 @@ public class PostController {
                     return Mono.fromCallable(() -> postService.createPost(dto))
                         .doOnNext(postDTO -> {
                             if (postDTO != null) {
-                                messagingTemplate.convertAndSend("/topic/post/new", postDTO);
+                                messagingTemplate.convertAndSend(Topix.POST_NEW, postDTO);
                             }
                         })
                         .map(MessageWrapper::toResponseEntityOk);
@@ -68,18 +57,6 @@ public class PostController {
                 }
             });
     }
-
-//    @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<Object> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
-//        User user = userService.checkLoginValid(request);
-//        PostDTO postDTO = null;
-//        if (user != null) {
-//            dto.setUserId(user.getId());
-//            postDTO = postService.updatePost(dto);
-//            if (postDTO != null) messagingTemplate.convertAndSend("/topic/post/update", postDTO);
-//        }
-//        return MessageWrapper.toResponseEntityOk(postDTO);
-//    }
 
     @PostMapping(value = "/post/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<Object>> updatePost(HttpServletRequest request, @ModelAttribute UploadPostReqDTO dto) {
@@ -90,7 +67,7 @@ public class PostController {
                     return Mono.fromCallable(() -> postService.updatePost(dto))
                         .doOnNext(postDTO -> {
                             if (postDTO != null) {
-                                messagingTemplate.convertAndSend("/topic/post/update", postDTO);
+                                messagingTemplate.convertAndSend(Topix.POST_UPDATE, postDTO);
                             }
                         })
                         .map(MessageWrapper::toResponseEntityOk);
@@ -106,7 +83,7 @@ public class PostController {
         PostDTO postDTO = null;
         if (user != null) {
             postDTO = postService.deletePost(dto);
-            messagingTemplate.convertAndSend("/topic/post/delete", postDTO);
+            messagingTemplate.convertAndSend(Topix.POST_DELETE, postDTO);
         }
         return MessageWrapper.toResponseEntityOk(postDTO);
     }

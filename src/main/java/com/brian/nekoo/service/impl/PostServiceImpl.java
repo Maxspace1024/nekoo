@@ -11,6 +11,7 @@ import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.AssetTypeEnum;
 import com.brian.nekoo.enumx.FriendshipStateEnum;
 import com.brian.nekoo.enumx.PostPrivacyEnum;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.repository.mongo.AssetRepository;
 import com.brian.nekoo.repository.mongo.DanmakuRepository;
 import com.brian.nekoo.repository.mongo.PostRepository;
@@ -86,8 +87,7 @@ public class PostServiceImpl implements PostService {
                     int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
 
                     uuidFilenames.add(uuidFilename);
-//                    s3Service.uploadFile(file, uuidFilename);
-                    s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
+                    s3Service.uploadFileWithProgress(file, uuidFilename, Topix.POST_PROGRESS + dto.getUserId());
                     Asset asset = Asset.builder()
                         .path(uuidFilename)
                         .type(assetType)
@@ -160,7 +160,7 @@ public class PostServiceImpl implements PostService {
 
                         uuidFilenames.add(uuidFilename);
 //                        s3Service.uploadFile(file, uuidFilename);
-                        s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
+                        s3Service.uploadFileWithProgress(file, uuidFilename, Topix.POST_PROGRESS + dto.getUserId());
                         Asset asset = Asset.builder()
                             .path(uuidFilename)
                             .type(assetType)

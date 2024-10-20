@@ -5,6 +5,7 @@ import com.brian.nekoo.dto.FriendshipDTO;
 import com.brian.nekoo.dto.MessageWrapper;
 import com.brian.nekoo.dto.req.FriendshipReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.FriendshipService;
 import com.brian.nekoo.service.UserService;
@@ -50,7 +51,7 @@ public class FriendshipController {
         if (user != null) {
             friendshipDTO = friendshipService.invite(dto.getSenderUserId(), dto.getReceiverUserId());
             if (friendshipDTO != null) {
-                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend(Topix.FRIENDSHIP_NOTIFICATION_NEW + friendshipDTO.getReceiverUserId(), friendshipDTO);
             }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
@@ -63,7 +64,7 @@ public class FriendshipController {
         if (user != null) {
             friendshipDTO = friendshipService.pending(dto.getFriendshipId());
             if (friendshipDTO != null)
-                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend(Topix.FRIENDSHIP_NOTIFICATION_NEW + friendshipDTO.getReceiverUserId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }
@@ -82,10 +83,10 @@ public class FriendshipController {
             senderChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getSenderUserId(), chatroomDTO.getChatroomId());
             receiverChatroomDTO = chatService.findChatroomByUserIdAndChatroomId(friendshipDTO.getReceiverUserId(), chatroomDTO.getChatroomId());
             if (senderChatroomDTO != null && receiverChatroomDTO != null) {
-                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getSenderUserId(), friendshipDTO);
-                messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + friendshipDTO.getReceiverUserId(), friendshipDTO);
-                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getSenderUserId(), senderChatroomDTO);
-                messagingTemplate.convertAndSend("/topic/chatroom/new/" + friendshipDTO.getReceiverUserId(), receiverChatroomDTO);
+                messagingTemplate.convertAndSend(Topix.FRIENDSHIP_NOTIFICATION_NEW + friendshipDTO.getSenderUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend(Topix.FRIENDSHIP_NOTIFICATION_NEW + friendshipDTO.getReceiverUserId(), friendshipDTO);
+                messagingTemplate.convertAndSend(Topix.CHATROOM_NEW + friendshipDTO.getSenderUserId(), senderChatroomDTO);
+                messagingTemplate.convertAndSend(Topix.CHATROOM_NEW + friendshipDTO.getReceiverUserId(), receiverChatroomDTO);
             }
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
@@ -97,7 +98,7 @@ public class FriendshipController {
         FriendshipDTO friendshipDTO = null;
         if (user != null) {
             friendshipDTO = friendshipService.reject(dto.getFriendshipId());
-            messagingTemplate.convertAndSend("/topic/friendship/notification/new/" + user.getId(), friendshipDTO);
+            messagingTemplate.convertAndSend(Topix.FRIENDSHIP_NOTIFICATION_NEW + user.getId(), friendshipDTO);
         }
         return MessageWrapper.toResponseEntityOk(friendshipDTO);
     }

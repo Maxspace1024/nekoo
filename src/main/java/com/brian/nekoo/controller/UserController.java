@@ -77,17 +77,6 @@ public class UserController {
         }
     }
 
-//    @PostMapping(value = "/user/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-//    public ResponseEntity<?> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
-//        User user = userService.checkLoginValid(request);
-//        UserDTO userDTO = null;
-//        if (user != null) {
-//            dto.setUserId(user.getId());
-//            userDTO = userService.updateUserProfile(dto);
-//        }
-//        return MessageWrapper.toResponseEntityOk(userDTO);
-//    }
-
     @PostMapping(value = "/user/profile", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public Mono<ResponseEntity<Object>> postProfile(HttpServletRequest request, @ModelAttribute UserProfileReqDTO dto) {
         return Mono.fromCallable(() -> userService.checkLoginValid(request))

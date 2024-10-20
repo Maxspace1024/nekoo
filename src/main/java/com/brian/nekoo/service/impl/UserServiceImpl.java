@@ -7,6 +7,7 @@ import com.brian.nekoo.dto.req.SignupReqDTO;
 import com.brian.nekoo.dto.req.UserProfileReqDTO;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.AssetTypeEnum;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.repository.mysql.UserRepository;
 import com.brian.nekoo.service.S3Service;
 import com.brian.nekoo.service.UserService;
@@ -34,6 +35,23 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
+    private final static String EMPTY_STR = "";
+
+    private final static String HEADER_AUTHORIZATION = "Authorization";
+    private final static String HEADER_BEARER = "Bearer ";
+
+    private final static String AUTH_JWT = "jwt";
+    private final static String AUTH_USER_ID = "userId";
+    private final static String AUTH_EMAIL = "email";
+    private final static String AUTH_USER_NAME = "userName";
+    private final static String AUTH_USER_AVATAR_PATH = "userAvatarPath";
+
+    private final static String ERROR_DUP_EMAIL = "信箱重複";
+    private final static String ERROR_EMAIL_PASSWORD = "帳號或密碼錯誤";
+    private final static String ERROR_AUTHORIZATION = "header authorization 錯誤";
+    private final static String ERROR_LOGIN = "登入授權不合法";
+    private final static String ERROR_JWT = "jwt 錯誤";
+
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
     private final PasswordEncoder passwordEncoder;
@@ -47,18 +65,18 @@ public class UserServiceImpl implements UserService {
             User user = oUser.get();
             String token = jwtUtil.generateToken(user.getEmail(), new HashMap<>());
             Map<String, Object> map = new HashMap<>();
-            map.put("jwt", token);
-            map.put("userId", user.getId());
-            map.put("email", user.getEmail());
-            map.put("userName", user.getName());
-            map.put("userAvatarPath", user.getAvatarPath());
+            map.put(AUTH_JWT, token);
+            map.put(AUTH_USER_ID, user.getId());
+            map.put(AUTH_EMAIL, user.getEmail());
+            map.put(AUTH_USER_NAME, user.getName());
+            map.put(AUTH_USER_AVATAR_PATH, user.getAvatarPath());
             builder.isSuccess(true)
                 .data(map);
             user.setWebToken(token);
             userRepository.save(user);
         } else {
             builder.isSuccess(false)
-                .error("帳號或密碼錯誤");
+                .error(ERROR_EMAIL_PASSWORD);
         }
         log.info(builder.build());
         return builder.build();
@@ -76,7 +94,7 @@ public class UserServiceImpl implements UserService {
                     .email(dto.getEmail())
                     .password(passwordEncoder.encode(dto.getPassword()))
                     .avatarPath(dto.getAvatarPath())
-                    .webToken("")
+                    .webToken(EMPTY_STR)
                     .createAt(now)
                     .modifyAt(now)
                     .build()
@@ -84,27 +102,27 @@ public class UserServiceImpl implements UserService {
             builder.isSuccess(true);
         } else {
             builder.isSuccess(false)
-                .error("信箱重複");
+                .error(ERROR_DUP_EMAIL);
         }
         return builder.build();
     }
 
     @Override
     public void logout(User user) {
-        user.setWebToken("");
+        user.setWebToken(EMPTY_STR);
         userRepository.save(user);
     }
 
     @Override
     public MessageWrapper<Object> checkLoginValidation(String authToken) {
         MessageWrapper.MessageWrapperBuilder<Object> builder = MessageWrapper.builder();
-        if (authToken == null || !authToken.startsWith("Bearer ")) {
+        if (authToken == null || !authToken.startsWith(HEADER_BEARER)) {
             builder.isSuccess(false)
-                .error("header authorization 錯誤");
+                .error(ERROR_AUTHORIZATION);
             return builder.build();
         }
         try {
-            String jwtToken = authToken.replace("Bearer ", "");
+            String jwtToken = authToken.replace(HEADER_BEARER, "");
             String email = jwtUtil.extractUsername(jwtToken);
             Optional<User> oUser = userRepository.findUserByEmailAndWebTokenAndRemoveAtIsNull(email, jwtToken);
             if (oUser.isPresent()) {
@@ -112,11 +130,11 @@ public class UserServiceImpl implements UserService {
                     .data(oUser.get());
             } else {
                 builder.isSuccess(false)
-                    .error("登入授權不合法");
+                    .error(ERROR_LOGIN);
             }
         } catch (ExpiredJwtException | UnsupportedJwtException | MalformedJwtException | SignatureException e) {
             builder.isSuccess(false)
-                .error("jwt 錯誤");
+                .error(ERROR_JWT);
             e.printStackTrace();
         }
         return builder.build();
@@ -126,7 +144,7 @@ public class UserServiceImpl implements UserService {
     public User checkLoginValid(HttpServletRequest request) {
         try {
             // 從請求中取得 JWT Token
-            String bearerToken = request.getHeader("Authorization");
+            String bearerToken = request.getHeader(HEADER_AUTHORIZATION);
             String token = jwtUtil.resolveToken(bearerToken);
             // 透過 JWT 解析出 userId
             String username = jwtUtil.extractUsername(token);
@@ -208,8 +226,7 @@ public class UserServiceImpl implements UserService {
                     fileExtension = FileUtil.extractFileExtension(uuidFilename);
                     int assetType = AssetTypeEnum.fromExtension(fileExtension).ordinal();
 
-//                    s3Service.uploadFile(file, uuidFilename);
-                    s3Service.uploadFileWithProgress(file, uuidFilename, "/topic/post/progress/" + dto.getUserId());
+                    s3Service.uploadFileWithProgress(file, uuidFilename, Topix.POST_PROGRESS + dto.getUserId());
                 } catch (Exception e) {
                     return null;
                 }

@@ -10,6 +10,7 @@ import com.brian.nekoo.entity.mysql.Chatroom;
 import com.brian.nekoo.entity.mysql.ChatroomUser;
 import com.brian.nekoo.entity.mysql.User;
 import com.brian.nekoo.enumx.ReadStateEnum;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.service.ChatService;
 import com.brian.nekoo.service.PostService;
 import com.brian.nekoo.service.UserService;
@@ -59,7 +60,7 @@ public class ChatroomController {
             Chatroom chatroom = chatService.updateModifyAtByChatroomId(chatLogDTO.getChatroomId());     // 更新聊天室修改時間
             List<ChatroomUser> chatroomUsers = chatService.updateReadState(userId, chatroom.getId(), ReadStateEnum.UNREAD.ordinal()); // 設定未讀
             if (chatLogDTO != null && chatroom != null)
-                messagingTemplate.convertAndSend("/topic/chatroom/" + dto.getChatroomUuid(), chatLogDTO);
+                messagingTemplate.convertAndSend(Topix.CHATROOM + dto.getChatroomUuid(), chatLogDTO);
         }
         return MessageWrapper.toResponseEntityOk(chatLogDTO);
     }

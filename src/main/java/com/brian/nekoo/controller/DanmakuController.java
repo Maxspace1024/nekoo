@@ -4,6 +4,7 @@ import com.brian.nekoo.dto.DanmakuDTO;
 import com.brian.nekoo.dto.MessageWrapper;
 import com.brian.nekoo.dto.req.DanmakuReqDTO;
 import com.brian.nekoo.entity.mysql.User;
+import com.brian.nekoo.enumx.Topix;
 import com.brian.nekoo.service.DanmakuService;
 import com.brian.nekoo.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +40,7 @@ public class DanmakuController {
             dto.setUserId(userId);
             danmakuDTO = danmakuService.createDanmaku(dto);
             if (danmakuDTO != null)
-                messagingTemplate.convertAndSend("/topic/danmaku/" + danmakuDTO.getAssetId(), danmakuDTO);
+                messagingTemplate.convertAndSend(Topix.DANMAKU + danmakuDTO.getAssetId(), danmakuDTO);
         }
         return MessageWrapper.toResponseEntityOk(danmakuDTO);
     }
@@ -53,7 +54,7 @@ public class DanmakuController {
             dto.setUserId(userId);
             danmakuDTO = danmakuService.deleteDanmaku(dto);
             if (danmakuDTO != null)
-                messagingTemplate.convertAndSend("/topic/danmaku/delete/" + danmakuDTO.getAssetId(), danmakuDTO);
+                messagingTemplate.convertAndSend(Topix.DANMAKU_DELETE + danmakuDTO.getAssetId(), danmakuDTO);
         }
         return MessageWrapper.toResponseEntityOk(danmakuDTO);
     }
