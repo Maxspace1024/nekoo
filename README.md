@@ -4,6 +4,13 @@
 
 A Danmaku social media.
 
+### Account
+
+You can signup a new one, or use
+
+* email: `nobi@gmail.com`
+* passwd: `asdfasdf`
+
 ## Description
 
 Nekoo give user an interesting way to interact others.
